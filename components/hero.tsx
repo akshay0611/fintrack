@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, DollarSign, PieChart, TrendingUp } from "lucide-react"
-import type React from "react" // Added import for React
+import { ArrowRight, DollarSign, PieChart, TrendingUp, CheckCircle, Shield, Zap } from "lucide-react"
+import { useRouter } from "next/navigation"
+import type React from "react"
 
 export default function Hero() {
   const [mounted, setMounted] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
@@ -70,9 +72,64 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.5 }}
         >
-          <Button size="lg" className="mt-8 text-lg">
+          <Button size="lg" className="mt-8 text-lg" onClick={() => router.push("/sign-in")}>
             Get Started <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
+        </motion.div>
+
+        {/* Why use FinTrack? Section */}
+        <motion.div
+          className="mt-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
+        >
+          <h2 className="text-3xl font-bold mb-8">Why use FinTrack?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <ReasonCard
+              icon={<CheckCircle className="w-8 h-8 text-primary" />}
+              title="Easy to Use"
+              description="Intuitive interface for hassle-free financial management."
+            />
+            <ReasonCard
+              icon={<Shield className="w-8 h-8 text-primary" />}
+              title="Secure"
+              description="Bank-level encryption to keep your financial data safe."
+            />
+            <ReasonCard
+              icon={<Zap className="w-8 h-8 text-primary" />}
+              title="Real-time Updates"
+              description="Get instant insights into your financial health."
+            />
+          </div>
+        </motion.div>
+
+        {/* Simple yet Powerful Features Section */}
+        <motion.div
+          className="mt-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.5 }}
+        >
+          <h2 className="text-3xl font-bold mb-8">Simple yet Powerful Features</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <FeatureDetailCard
+              title="Expense Categorization"
+              description="Automatically categorize your expenses for better insights."
+            />
+            <FeatureDetailCard
+              title="Budget Planning"
+              description="Set and track budgets for different expense categories."
+            />
+            <FeatureDetailCard
+              title="Investment Tracking"
+              description="Monitor your investments and their performance over time."
+            />
+            <FeatureDetailCard
+              title="Financial Reports"
+              description="Generate comprehensive reports to analyze your financial trends."
+            />
+          </div>
         </motion.div>
       </motion.div>
     </div>
@@ -88,6 +145,29 @@ function FeatureCard({ icon, title }: { icon: React.ReactNode; title: string }) 
     >
       <div className="text-primary mb-2">{icon}</div>
       <h3 className="text-lg font-semibold">{title}</h3>
+    </motion.div>
+  )
+}
+
+function ReasonCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+  return (
+    <motion.div
+      className="flex flex-col items-center p-6 bg-card rounded-lg shadow-lg"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+    >
+      <div className="text-primary mb-4">{icon}</div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground text-center">{description}</p>
+    </motion.div>
+  )
+}
+
+function FeatureDetailCard({ title, description }: { title: string; description: string }) {
+  return (
+    <motion.div className="p-6 bg-card rounded-lg shadow-lg" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-muted-foreground">{description}</p>
     </motion.div>
   )
 }

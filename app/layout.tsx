@@ -44,23 +44,24 @@ export default function RootLayout({
                   <div className="flex gap-5 items-center font-semibold">
                     <Link href={"/"}>FinTrack</Link>
                   </div>
-                  {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
-                </div>
-                <ThemeSwitcher />
+                  <div className="flex items-center gap-4">
+                    {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
+                    <ThemeSwitcher />
+                  </div>
+                </div> 
               </nav>
               <div className="flex flex-col gap-20 max-w-5xl p-5">
                 {children}
               </div>
-
-          <footer className="w-full flex flex-col items-center justify-center border-t mx-auto text-center text-xs gap-2 py-8">
-            <p className="text-gray-600 dark:text-gray-400">
-              © {new Date().getFullYear()} FinTrack. All rights reserved.
-            </p>
-            <p className="text-gray-600 dark:text-gray-400">
-             Built with ❤️ by Akshay
-            </p>
-          </footer>
-          </div>
+              <footer className="w-full flex flex-col items-center justify-center border-t mx-auto text-center text-xs gap-2 py-8">
+                <p className="text-gray-600 dark:text-gray-400">
+                  © {new Date().getFullYear()} FinTrack. All rights reserved.
+                </p>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Built with ❤️ by Akshay
+                </p>
+              </footer>
+            </div>
           </main>
         </ThemeProvider>
       </body>
