@@ -7,6 +7,7 @@ export interface SubscriptionEntry {
   amount: number
   billingCycle: string
   startDate: string
+  status: 'active' | 'cancelled'; // Add the status property here.
 }
 
 interface SubscriptionStore {
