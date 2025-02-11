@@ -1,4 +1,4 @@
-import { FinancialOverview } from '@/components/FinancialOverview'; // Import the FinancialOverview component
+import { Overview } from '@/components/overview'; // Import the FinancialOverview component
 import { SideNav } from '@/components/side-nav'; // Import the SideNav component
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
@@ -25,7 +25,7 @@ export default async function ProtectedPage() {
 
         {/* Main Content */}
         <div className="flex-1 ml-64 p-6">
-          <FinancialOverview />
+          <Overview />
         </div>
       </div>
     </PreferencesProvider>
