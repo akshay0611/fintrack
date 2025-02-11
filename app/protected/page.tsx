@@ -2,7 +2,7 @@ import { Overview } from '@/components/overview'; // Import the FinancialOvervie
 import { SideNav } from '@/components/side-nav'; // Import the SideNav component
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { PreferencesProvider } from '@/lib/preferences-context';
+
 
 export default async function ProtectedPage() {
   const supabase = await createClient();
@@ -16,7 +16,7 @@ export default async function ProtectedPage() {
   }
 
   return (
-    <PreferencesProvider>
+
       <div className="flex h-screen">
         {/* Sidebar */}
         <div className="fixed left-0 top-0 h-screen w-64">
@@ -28,6 +28,6 @@ export default async function ProtectedPage() {
           <Overview />
         </div>
       </div>
-    </PreferencesProvider>
+
   );
 }
