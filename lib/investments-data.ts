@@ -7,6 +7,10 @@ export interface InvestmentEntry {
   type: string
   name: string
   date: string
+  units: number
+  price: number
+  category: string
+  notes?: string
 }
 
 interface InvestmentStore {
