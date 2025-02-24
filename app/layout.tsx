@@ -51,14 +51,15 @@ export default function RootLayout({
               <div className="flex flex-col gap-20 max-w-5xl p-5">
                 {children}
               </div>
-              <footer className="w-full flex flex-col items-center justify-center border-t mx-auto text-center text-xs gap-2 py-8">
-                <p className="text-gray-600 dark:text-gray-400">
-                  © {new Date().getFullYear()} FinTrack. All rights reserved.
-                </p>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Built with ❤️ by Akshay
-                </p>
-              </footer>
+              <footer className="w-full flex flex-col items-center justify-center mx-auto text-center text-xs gap-2 py-8">
+  <div className="w-full border-t mt-4"></div>
+  <p className="text-gray-600 dark:text-gray-400">
+    © {new Date().getFullYear()} FinTrack. All rights reserved.
+  </p>
+  <p className="text-gray-600 dark:text-gray-400">
+    Built with ❤️ by Akshay
+  </p>
+</footer>
             </div>
           </main>
         </ThemeProvider>
