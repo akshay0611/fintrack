@@ -8,7 +8,10 @@ import { SideNav } from "@/components/side-nav"
 export default function InvestmentsPage() {
   return (
     <div className="flex min-h-screen">
-      <SideNav />
+    {/* Fixed Side Navigation */}
+    <div className="fixed left-0 top-0 h-screen w-64">
+        <SideNav />
+      </div>
       <div className="flex-1">
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
           <div className="space-y-2">
@@ -24,4 +27,3 @@ export default function InvestmentsPage() {
     </div>
   )
 }
-
