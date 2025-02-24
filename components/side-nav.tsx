@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 import { IndianRupee, PieChart, RefreshCcw, CreditCard, Settings, HelpCircle, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -14,25 +15,46 @@ interface NavLinkProps {
   className?: string;
 }
 
-const NavLink = ({ href, icon: Icon, children, className }: NavLinkProps) => (
-  <Link href={href} className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${className}`}>
-    <Icon className="h-4 w-4" />
-    <span>{children}</span>
-  </Link>
-);
+const NavLink = ({ href, icon: Icon, children, className }: NavLinkProps) => {
+  const pathname = usePathname();
+  // You can adjust the matching logic for nested routes if needed.
+  const isActive = pathname === href;
+
+  // Define active styles – adjust these classes as desired.
+  const activeClasses = isActive
+    ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-50"
+    : "";
+
+  return (
+    <Link
+      href={href}
+      className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${className} ${activeClasses}`}
+    >
+      <Icon className="h-4 w-4" />
+      <span>{children}</span>
+    </Link>
+  );
+};
 
 export function SideNav() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
-  const toggleSidebar = () => setIsOpen(!isOpen)
+  const toggleSidebar = () => setIsOpen(!isOpen);
 
   return (
     <>
-      <Button variant="outline" size="icon" className="fixed top-4 left-4 z-40 md:hidden" onClick={toggleSidebar}>
+      <Button
+        variant="outline"
+        size="icon"
+        className="fixed top-4 left-4 z-40 md:hidden"
+        onClick={toggleSidebar}
+      >
         <Menu className="h-4 w-4" />
       </Button>
       <aside
-        className={`fixed inset-y-0 left-0 z-30 w-64 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+        className={`fixed inset-y-0 left-0 z-30 w-64 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0`}
       >
         <div className="flex h-full flex-col overflow-hidden border-r">
           <div className="p-4">
@@ -96,5 +118,5 @@ export function SideNav() {
         </div>
       </aside>
     </>
-  )
+  );
 }
