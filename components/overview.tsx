@@ -1,5 +1,6 @@
 "use client"
 
+import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { IndianRupee } from "lucide-react"
 import { useDashboardData } from "@/lib/dashboard-data"
@@ -7,6 +8,8 @@ import { usePreferences } from "@/lib/preferences-context"
 import { formatCurrency } from "@/lib/format-utils"
 import { create } from "zustand"
 import type { DateRange } from "react-day-picker"
+import { Reports } from './reports'
+import { RecentTransactions } from "@/components/recent-transactions"
 
 interface DateRangeStore {
   dateRange: DateRange
@@ -29,7 +32,7 @@ export function Overview() {
 
   return (
     <div>
-       <h1 className="text-3xl font-bold mb-6">Dashboard Overview</h1>
+      <h1 className="text-3xl font-bold mb-6">Dashboard Overview</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card className="p-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
@@ -91,15 +94,11 @@ export function Overview() {
         </Card>
       </div>
 
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-3">Expenses by Category</h2>
-        <p className="text-gray-600 text-lg">Breakdown of expenses for the selected date range.</p>
+      <div className="mt-8 grid gap-8 lg:grid-cols-2">
+        <Reports dateRange={dateRange} />
+        <RecentTransactions dateRange={dateRange} />
       </div>
-
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-3">Recent Transactions</h2>
-        <p className="text-gray-600 text-lg">You made 0 transactions recently.</p>
-      </div>
+      
     </div>
   )
 }
