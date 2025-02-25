@@ -38,7 +38,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { AddIncomeDialog } from "./add-income-dialog"
-import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, subWeeks, subMonths, isWithinInterval } from "date-fns"
+import { 
+  startOfWeek, 
+  startOfMonth, 
+  endOfWeek, 
+  endOfMonth, 
+  subWeeks, 
+  subMonths, 
+  isWithinInterval 
+} from "date-fns"
 
 type TimeFilter = 'all' | 'this_week' | 'this_month' | 'past_week' | 'past_month'
 
@@ -61,25 +69,24 @@ export function IncomeHistory() {
     { id: 'description', label: 'Notes', isVisible: true },
     { id: 'actions', label: 'Actions', isVisible: true },
   ])
-  
+
   const incomes = useIncomeStore((state) => state.incomes)
   const deleteIncome = useIncomeStore((state) => state.deleteIncome)
   const { preferences } = usePreferences()
 
+  // Helper function to check if a date is within an interval
+  const isDateInRange = (date: Date, start: Date, end: Date) => {
+    return isWithinInterval(date, { start, end })
+  }
+
   const getTimeFilteredIncomes = (incomes: any[], filter: TimeFilter) => {
     const now = new Date()
 
-    // Helper function to check if a date is within an interval
-    const isDateInRange = (date: Date, start: Date, end: Date) => {
-      return isWithinInterval(date, { start, end })
-    }
-
     return incomes.filter(income => {
       const incomeDate = new Date(income.date)
-
       switch (filter) {
         case 'this_week': {
-          const weekStart = startOfWeek(now, { weekStartsOn: 1 }) // Week starts on Monday
+          const weekStart = startOfWeek(now, { weekStartsOn: 1 })
           const weekEnd = endOfWeek(now, { weekStartsOn: 1 })
           return isDateInRange(incomeDate, weekStart, weekEnd)
         }
@@ -106,22 +113,29 @@ export function IncomeHistory() {
 
   const filteredIncomes = useMemo(() => {
     return getTimeFilteredIncomes(incomes, timeFilter).filter(income => {
-      const matchesSearch = (income.description?.toLowerCase().includes(search.toLowerCase()) ||
-                           income.category.toLowerCase().includes(search.toLowerCase()))
+      const matchesSearch =
+        income.description?.toLowerCase().includes(search.toLowerCase()) ||
+        income.category.toLowerCase().includes(search.toLowerCase())
       const matchesCategory = category === "all" || income.category === category
       return matchesSearch && matchesCategory
     })
   }, [incomes, search, category, timeFilter])
 
-  const handleDelete = (id: string) => {
-    deleteIncome(id)
-    toast.success("Income deleted successfully!")
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteIncome(id)
+      toast.success("Income deleted successfully!")
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete income")
+    }
   }
 
   const toggleColumn = (columnId: string) => {
-    setColumns(columns.map(col => 
-      col.id === columnId ? { ...col, isVisible: !col.isVisible } : col
-    ))
+    setColumns((prevColumns) =>
+      prevColumns.map(col =>
+        col.id === columnId ? { ...col, isVisible: !col.isVisible } : col
+      )
+    )
   }
 
   const visibleColumns = columns.filter(col => col.isVisible)
@@ -169,7 +183,10 @@ export function IncomeHistory() {
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={timeFilter} onValueChange={(value: TimeFilter) => setTimeFilter(value)}>
+          <Select
+            value={timeFilter}
+            onValueChange={(value: TimeFilter) => setTimeFilter(value)}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Time Period" />
             </SelectTrigger>
@@ -239,7 +256,11 @@ export function IncomeHistory() {
                     {columns.find(col => col.id === 'actions')?.isVisible && (
                       <TableCell className="text-right">
                         <EditIncomeForm income={item} />
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(item.id)}
+                        >
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Delete income</span>
                         </Button>
@@ -259,4 +280,3 @@ export function IncomeHistory() {
     </Card>
   )
 }
-

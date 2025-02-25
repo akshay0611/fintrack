@@ -59,16 +59,21 @@ export function AddIncomeForm({ onSuccess }: AddIncomeFormProps) {
     INR: "₹",
   };
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     const incomeData = {
       ...values,
       description: values.description || "", // Ensure description is always a string
     };
 
-    addIncome(incomeData);
-    toast.success("Income added successfully!");
-    form.reset();
-    onSuccess?.();
+    // Await the addIncome call to handle errors appropriately
+    try {
+      await addIncome(incomeData);
+      toast.success("Income added successfully!");
+      form.reset();
+      onSuccess?.();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to add income");
+    }
   }
 
   return (

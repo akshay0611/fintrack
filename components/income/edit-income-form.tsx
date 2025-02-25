@@ -33,7 +33,6 @@ import { useIncomeStore, IncomeEntry } from "@/lib/income-data"
 import { Pencil } from 'lucide-react'
 import { usePreferences } from "@/lib/preferences-context"
 
-// Define the form schema with amount as a number
 const formSchema = z.object({
   amount: z.number().min(1, "Amount is required"),
   category: z.string().min(1, "Category is required"),
@@ -49,32 +48,36 @@ export function EditIncomeForm({ income }: EditIncomeFormProps) {
   const [open, setOpen] = useState(false)
   const editIncome = useIncomeStore((state) => state.editIncome)
   const { preferences } = usePreferences()
-  const currencySymbols = {
+  const currencySymbols: Record<string, string> = {
     INR: '₹',
     USD: '$',
     EUR: '€',
     GBP: '£',
-    // Add other currency symbols as needed
   }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      amount: income.amount, // Initialize as a number
+      amount: income.amount,
       category: income.category,
       description: income.description,
       date: income.date,
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     const incomeData = {
       ...values,
-      description: values.description || "", // Ensure description is always a string
-    };
-    editIncome(income.id, incomeData);
-    toast.success("Income updated successfully!");
-    setOpen(false);
+      description: values.description || "",
+    }
+    try {
+      // Await the update operation from the store
+      await editIncome(income.id, incomeData)
+      toast.success("Income updated successfully!")
+      setOpen(false)
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update income")
+    }
   }
 
   return (
@@ -96,13 +99,17 @@ export function EditIncomeForm({ income }: EditIncomeFormProps) {
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount ({currencySymbols[preferences.currency]})</FormLabel>
+                  <FormLabel>
+                    Amount ({currencySymbols[preferences.currency]})
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))} // Ensure the value is a number
+                      onChange={(e) =>
+                        field.onChange(Number(e.target.value))
+                      }
                     />
                   </FormControl>
                   <FormMessage />
@@ -115,7 +122,10 @@ export function EditIncomeForm({ income }: EditIncomeFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a category" />
@@ -158,7 +168,9 @@ export function EditIncomeForm({ income }: EditIncomeFormProps) {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">Update Income</Button>
+            <Button type="submit" className="w-full">
+              Update Income
+            </Button>
           </form>
         </Form>
       </DialogContent>
