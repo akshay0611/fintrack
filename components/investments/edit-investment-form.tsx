@@ -30,16 +30,15 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { useInvestmentStore, InvestmentEntry } from "@/lib/investments-data"
-import { Pencil } from 'lucide-react'
+import { Pencil } from "lucide-react"
 import { usePreferences } from "@/lib/preferences-context"
 
+// Define the form schema with `z.number()` for `units` and `price`
 const formSchema = z.object({
-  amount: z.string().min(1, "Amount is required").transform(Number),
-  type: z.string().min(1, "Investment type is required"),
   name: z.string().min(1, "Investment name is required"),
   date: z.string().min(1, "Date is required"),
-  units: z.string().min(1, "Number of units is required").transform(Number),
-  price: z.string().min(1, "Price per unit is required").transform(Number),
+  units: z.number().min(1, "Number of units is required"), // Use `z.number()`
+  price: z.number().min(1, "Price per unit is required"), // Use `z.number()`
   category: z.string().min(1, "Category is required"),
   notes: z.string().optional(),
 })
@@ -58,24 +57,30 @@ export function EditInvestmentForm({ investment }: EditInvestmentFormProps) {
     GBP: '£',
     INR: '₹',
     // Add other currencies as needed
-  };
+  }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      amount: investment.amount,
-      type: investment.type,
       name: investment.name,
       date: investment.date,
-      units: investment.units,
-      price: investment.price,
+      units: investment.units, // Pass as number
+      price: investment.price, // Pass as number
       category: investment.category,
       notes: investment.notes,
     },
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    editInvestment(investment.id, values)
+    // Calculate the amount dynamically
+    const amount = values.units * values.price;
+
+    // Call editInvestment with the updated values and calculated amount
+    editInvestment(investment.id, {
+      ...values,
+      amount, // Include the calculated amount
+    });
+
     toast.success("Investment updated successfully!")
     setOpen(false)
   }
@@ -94,43 +99,6 @@ export function EditInvestmentForm({ investment }: EditInvestmentFormProps) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount ({currencySymbols[preferences.currency]})</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="0.00" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Investment Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select investment type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="stocks">Stocks</SelectItem>
-                      <SelectItem value="mutual_funds">Mutual Funds</SelectItem>
-                      <SelectItem value="real_estate">Real Estate</SelectItem>
-                      <SelectItem value="crypto">Cryptocurrency</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="name"
@@ -152,6 +120,83 @@ export function EditInvestmentForm({ investment }: EditInvestmentFormProps) {
                   <FormLabel>Date</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="units"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Number of Units</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number" // Ensure input type is number
+                      placeholder="10"
+                      {...field}
+                      value={field.value} // Pass the number value directly
+                      onChange={(e) => field.onChange(e.target.valueAsNumber)} // Use `valueAsNumber`
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Price per Unit ({currencySymbols[preferences.currency]})</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number" // Ensure input type is number
+                      placeholder="100.00"
+                      {...field}
+                      value={field.value} // Pass the number value directly
+                      onChange={(e) => field.onChange(e.target.valueAsNumber)} // Use `valueAsNumber`
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select investment category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="stocks">Stocks</SelectItem>
+                      <SelectItem value="mutual_funds">Mutual Funds</SelectItem>
+                      <SelectItem value="real_estate">Real Estate</SelectItem>
+                      <SelectItem value="crypto">Cryptocurrency</SelectItem>
+                      <SelectItem value="bonds">Bonds</SelectItem>
+                      <SelectItem value="gold">Gold</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Additional details..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

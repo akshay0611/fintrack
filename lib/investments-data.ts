@@ -4,7 +4,6 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 export interface InvestmentEntry {
   id: string
   amount: number
-  type: string
   name: string
   date: string
   units: number
@@ -25,25 +24,37 @@ export const useInvestmentStore = create<InvestmentStore>()(
   persist(
     (set, get) => ({
       investments: [],
-      addInvestment: (investment) => set((state) => ({
-        investments: [...state.investments, { ...investment, id: Date.now().toString() }]
-      })),
-      editInvestment: (id, updatedInvestment) => set((state) => ({
-        investments: state.investments.map((investment) => 
-          investment.id === id ? { ...investment, ...updatedInvestment } : investment
-        )
-      })),
-      deleteInvestment: (id) => set((state) => ({
-        investments: state.investments.filter((investment) => investment.id !== id)
-      })),
+      addInvestment: (investment) =>
+        set((state) => ({
+          investments: [
+            ...state.investments,
+            { ...investment, id: Date.now().toString() }
+          ]
+        })),
+      editInvestment: (id, updatedInvestment) =>
+        set((state) => ({
+          investments: state.investments.map((investment) =>
+            investment.id === id
+              ? { ...investment, ...updatedInvestment }
+              : investment
+          )
+        })),
+      deleteInvestment: (id) =>
+        set((state) => ({
+          investments: state.investments.filter(
+            (investment) => investment.id !== id
+          )
+        })),
       getTotalInvestments: () => {
-        return get().investments.reduce((total, investment) => total + investment.amount, 0)
+        return get().investments.reduce(
+          (total, investment) => total + investment.amount,
+          0
+        )
       }
     }),
     {
       name: 'investment-storage',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => localStorage)
     }
   )
 )
-

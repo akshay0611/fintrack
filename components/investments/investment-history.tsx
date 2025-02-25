@@ -58,7 +58,7 @@ interface SortState {
 export function InvestmentHistory() {
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState("all")
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("this_month")
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [sort, setSort] = useState<SortState>({ field: 'date', direction: 'desc' })
   const [columns, setColumns] = useState<Column[]>([

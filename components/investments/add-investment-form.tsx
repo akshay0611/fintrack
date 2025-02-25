@@ -70,7 +70,6 @@ export function AddInvestmentForm({ onSuccess }: AddInvestmentFormProps) {
       category: values.category,
       notes: values.notes,
       date: values.date,
-      type: "your_default_type_here",
     })
     toast.success("Investment added successfully!")
     form.reset()
