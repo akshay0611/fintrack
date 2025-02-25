@@ -21,8 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
-import { useInvestmentStore } from "@/lib/investments-data"
 import { usePreferences } from "@/lib/preferences-context"
+import { createClient } from '@/utils/supabase/client' // Import Supabase client
 
 const formSchema = z.object({
   name: z.string().min(1, "Investment name is required"),
@@ -38,8 +38,8 @@ interface AddInvestmentFormProps {
 }
 
 export function AddInvestmentForm({ onSuccess }: AddInvestmentFormProps) {
-  const addInvestment = useInvestmentStore((state) => state.addInvestment)
   const { preferences } = usePreferences()
+  const supabase = createClient() // Initialize Supabase client
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,20 +60,37 @@ export function AddInvestmentForm({ onSuccess }: AddInvestmentFormProps) {
     'INR': '₹'
   }
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     const amount = values.units * values.price
-    addInvestment({
-      name: values.name,
-      units: values.units,
-      price: values.price,
-      amount,
-      category: values.category,
-      notes: values.notes,
-      date: values.date,
-    })
-    toast.success("Investment added successfully!")
-    form.reset()
-    onSuccess?.()
+
+    // Save investment to Supabase
+    const { data, error } = await supabase
+      .from('investments')
+      .insert([
+        {
+          name: values.name,
+          units: values.units,
+          price: values.price,
+          amount,
+          category: values.category,
+          notes: values.notes,
+          date: values.date,
+          user_id: (await supabase.auth.getUser()).data.user?.id, // Add user_id from authenticated user
+        }
+      ])
+      .select()
+
+    if (error) {
+      toast.error("Failed to add investment. Please try again.")
+      console.error("Error adding investment:", error)
+      return
+    }
+
+    if (data) {
+      toast.success("Investment added successfully!")
+      form.reset()
+      onSuccess?.()
+    }
   }
 
   return (

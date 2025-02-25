@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Card,
   CardContent,
@@ -17,7 +17,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { useInvestmentStore } from "@/lib/investments-data"
 import { EditInvestmentForm } from "./edit-investment-form"
 import { Plus, Search, Trash2, ChevronDown, ArrowUpDown } from 'lucide-react'
 import { toast } from "sonner"
@@ -39,6 +38,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { AddInvestmentDialog } from "./add-investment-dialog"
 import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, subWeeks, subMonths, isWithinInterval } from "date-fns"
+import { createClient } from '@/utils/supabase/client' // Import Supabase client
+import { InvestmentEntry } from "@/lib/investments-data"; // Import the InvestmentEntry type
 
 type TimeFilter = 'all' | 'this_week' | 'this_month' | 'past_week' | 'past_month'
 type SortDirection = 'asc' | 'desc'
@@ -71,9 +72,32 @@ export function InvestmentHistory() {
     { id: 'notes', label: 'Notes', isVisible: true },
   ])
   
-  const investments = useInvestmentStore((state) => state.investments)
-  const deleteInvestment = useInvestmentStore((state) => state.deleteInvestment)
+  // Explicitly type investments state as InvestmentEntry[]
+  const [investments, setInvestments] = useState<InvestmentEntry[]>([]) 
   const { preferences } = usePreferences()
+  const supabase = createClient() // Initialize Supabase client
+
+  // Fetch investments from Supabase when the component mounts
+  useEffect(() => {
+    const fetchInvestments = async () => {
+      const { data, error } = await supabase
+        .from('investments')
+        .select('*')
+        .eq('user_id', (await supabase.auth.getUser()).data?.user?.id) // Fetch investments for the current user
+
+      if (error) {
+        toast.error("Failed to fetch investments. Please try again.")
+        console.error("Error fetching investments:", error)
+        return
+      }
+
+      if (data) {
+        setInvestments(data)
+      }
+    }
+
+    fetchInvestments()
+  }, [])
 
   const getTimeFilteredInvestments = (investments: any[], filter: TimeFilter) => {
     const now = new Date()
@@ -150,8 +174,19 @@ export function InvestmentHistory() {
     return sortInvestments(filtered)
   }, [investments, search, category, timeFilter, sort])
 
-  const handleDelete = (id: string) => {
-    deleteInvestment(id)
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase
+      .from('investments')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      toast.error("Failed to delete investment. Please try again.")
+      console.error("Error deleting investment:", error)
+      return
+    }
+
+    setInvestments(investments.filter(investment => investment.id !== id))
     toast.success("Investment deleted successfully!")
   }
 
@@ -344,4 +379,3 @@ export function InvestmentHistory() {
     </Card>
   )
 }
-

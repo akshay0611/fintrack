@@ -32,6 +32,7 @@ import { toast } from "sonner"
 import { useInvestmentStore, InvestmentEntry } from "@/lib/investments-data"
 import { Pencil } from "lucide-react"
 import { usePreferences } from "@/lib/preferences-context"
+import { createClient } from '@/utils/supabase/client' // Import Supabase client
 
 // Define the form schema with `z.number()` for `units` and `price`
 const formSchema = z.object({
@@ -49,15 +50,8 @@ interface EditInvestmentFormProps {
 
 export function EditInvestmentForm({ investment }: EditInvestmentFormProps) {
   const [open, setOpen] = useState(false)
-  const editInvestment = useInvestmentStore((state) => state.editInvestment)
   const { preferences } = usePreferences()
-  const currencySymbols = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    INR: '₹',
-    // Add other currencies as needed
-  }
+  const supabase = createClient() // Initialize Supabase client
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -71,18 +65,43 @@ export function EditInvestmentForm({ investment }: EditInvestmentFormProps) {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  const currencySymbols = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    INR: '₹',
+    // Add other currencies as needed
+  }
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     // Calculate the amount dynamically
     const amount = values.units * values.price;
 
-    // Call editInvestment with the updated values and calculated amount
-    editInvestment(investment.id, {
-      ...values,
-      amount, // Include the calculated amount
-    });
+    // Update investment in Supabase
+    const { data, error } = await supabase
+      .from('investments')
+      .update({
+        name: values.name,
+        date: values.date,
+        units: values.units,
+        price: values.price,
+        amount,
+        category: values.category,
+        notes: values.notes,
+      })
+      .eq('id', investment.id) // Match the investment by ID
+      .select()
 
-    toast.success("Investment updated successfully!")
-    setOpen(false)
+    if (error) {
+      toast.error("Failed to update investment. Please try again.")
+      console.error("Error updating investment:", error)
+      return
+    }
+
+    if (data) {
+      toast.success("Investment updated successfully!")
+      setOpen(false)
+    }
   }
 
   return (
