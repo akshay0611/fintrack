@@ -1,16 +1,26 @@
-"use client"
+"use client";
 
-import { Suspense } from "react"
-import { ExpenseHistory } from "@/components/expenses/expense-history"
-import { Skeleton } from "@/components/ui/skeleton"
-import { SideNav } from "@/components/side-nav"
+import { useEffect } from "react";
+import { Suspense } from "react";
+import { ExpenseHistory } from "@/components/expenses/expense-history";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SideNav } from "@/components/side-nav";
+import { useExpenseStore } from "@/lib/expenses-data"; // Import the Zustand store
 
 export default function ExpensePage() {
+  // Get fetchExpenses function from Zustand store
+  const fetchExpenses = useExpenseStore((state) => state.fetchExpenses);
+
+  // Fetch expenses on component mount
+  useEffect(() => {
+    fetchExpenses();
+  }, [fetchExpenses]);
+
   return (
     <div className="flex min-h-screen">
-        <div className="fixed left-0 top-0 h-screen w-64">
-          <SideNav />
-        </div>
+      <div className="fixed left-0 top-0 h-screen w-64">
+        <SideNav />
+      </div>
       <div className="flex-1">
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
           <div className="space-y-2">
@@ -24,5 +34,5 @@ export default function ExpensePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

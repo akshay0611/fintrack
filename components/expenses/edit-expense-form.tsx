@@ -74,10 +74,16 @@ export function EditExpenseForm({ expense }: EditExpenseFormProps) {
     const expenseData = {
       ...values,
       description: values.description || "", // Ensure description is always a string
+    };
+
+    // Await the editExpense call to handle errors appropriately
+    try {
+      editExpense(expense.id, expenseData);
+      toast.success("Expense updated successfully!");
+      setOpen(false);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update expense");
     }
-    editExpense(expense.id, expenseData)
-    toast.success("Expense updated successfully!")
-    setOpen(false)
   }
 
   return (

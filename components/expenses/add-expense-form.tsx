@@ -67,10 +67,15 @@ export function AddExpenseForm({ onSuccess }: AddExpenseFormProps) {
       description: values.description || "", // Ensure description is always a string
     };
   
-    addExpense(expenseData);
-    toast.success("Expense added successfully!");
-    form.reset();
-    onSuccess?.();
+    // Await the addExpense call to handle errors appropriately
+    try {
+      addExpense(expenseData);
+      toast.success("Expense added successfully!");
+      form.reset();
+      onSuccess?.();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to add expense");
+    }
   }
   
 

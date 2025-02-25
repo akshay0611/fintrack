@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Card,
   CardContent,
@@ -58,7 +58,7 @@ interface SortState {
 export function ExpenseHistory() {
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState("all")
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("this_month")
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [sort, setSort] = useState<SortState>({ field: 'date', direction: 'desc' })
   const [columns, setColumns] = useState<Column[]>([
@@ -69,9 +69,23 @@ export function ExpenseHistory() {
     { id: 'paidVia', label: 'Paid Via', isVisible: true },
   ])
   
+  const fetchExpenses = useExpenseStore((state) => state.fetchExpenses)
   const expenses = useExpenseStore((state) => state.expenses)
   const deleteExpense = useExpenseStore((state) => state.deleteExpense)
   const { preferences } = usePreferences()
+
+  useEffect(() => {
+    // Fetch expenses when the component mounts
+    const loadExpenses = async () => {
+      try {
+        await fetchExpenses();
+      } catch (error) {
+        console.error("Failed to fetch expenses:", error);
+      }
+    };
+
+    loadExpenses();
+  }, [fetchExpenses]);
 
   const getTimeFilteredExpenses = (expenses: any[], filter: TimeFilter) => {
     const now = new Date()
