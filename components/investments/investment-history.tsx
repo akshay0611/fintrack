@@ -366,7 +366,7 @@ export function InvestmentHistory() {
         <Button
           onClick={() => setIsAddDialogOpen(true)}
           size="icon"
-          className="h-14 w-14 rounded-full shadow-lg"
+          className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"
         >
           <Plus className="h-6 w-6" />
           <span className="sr-only">Add investment</span>
