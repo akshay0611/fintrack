@@ -1,18 +1,18 @@
 "use client"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowDown, ArrowUp, CreditCard, PiggyBank, Wallet, WalletCards } from "lucide-react"
-import { useDashboardData } from "@/lib/dashboard-data"
-import { usePreferences } from "@/lib/preferences-context"
-import { formatCurrency } from "@/lib/format-utils"
-import { create } from "zustand"
-import type { DateRange } from "react-day-picker"
-import { Reports } from "./reports"
-import { RecentTransactions } from "@/components/recent-transactions"
-import { motion } from "framer-motion"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowDown, ArrowUp, CreditCard, PiggyBank, Wallet, WalletCards } from "lucide-react";
+import { useDashboardData } from "@/lib/dashboard-data";
+import { usePreferences } from "@/lib/preferences-context";
+import { formatCurrency } from "@/lib/format-utils";
+import { create } from "zustand";
+import type { DateRange } from "react-day-picker";
+import { Reports } from "./reports";
+import { RecentTransactions } from "@/components/recent-transactions";
+import { motion } from "framer-motion";
 
 interface DateRangeStore {
-  dateRange: DateRange
-  setDateRange: (range: DateRange) => void
+  dateRange: DateRange;
+  setDateRange: (range: DateRange) => void;
 }
 
 const useDateRangeStore = create<DateRangeStore>((set) => ({
@@ -21,13 +21,22 @@ const useDateRangeStore = create<DateRangeStore>((set) => ({
     to: new Date(),
   },
   setDateRange: (range: DateRange) => set({ dateRange: range }),
-}))
+}));
 
 export function Overview() {
-  const { dateRange } = useDateRangeStore()
-  const { totalIncome, totalExpenses, totalInvestments, monthlySubscriptionCost, availableBalance, totalSavings } =
-    useDashboardData(dateRange)
-  const { preferences } = usePreferences()
+  const { dateRange } = useDateRangeStore();
+  const {
+    totalIncome,
+    totalExpenses,
+    totalInvestments,
+    monthlySubscriptionCost,
+    availableBalance,
+    totalSavings,
+    yearlySubscriptionCost,
+  } = useDashboardData(dateRange);
+  const { preferences } = usePreferences();
+
+  const effectiveMonthlyCost = monthlySubscriptionCost + (yearlySubscriptionCost / 12);
 
   const container = {
     hidden: { opacity: 0 },
@@ -37,12 +46,12 @@ export function Overview() {
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const item = {
     hidden: { y: 20, opacity: 0 },
     show: { y: 0, opacity: 1 },
-  }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -141,14 +150,14 @@ export function Overview() {
         <motion.div variants={item}>
           <Card className="overflow-hidden border-l-4 border-l-orange-500 transition-all duration-200 hover:shadow-md">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-semibold">Monthly Subscriptions</CardTitle>
+              <CardTitle className="text-base font-semibold">Effective Monthly Cost</CardTitle>
               <div className="h-8 w-8 rounded-full bg-orange-500/10 flex items-center justify-center">
                 <CreditCard className="h-4 w-4 text-orange-500" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{formatCurrency(monthlySubscriptionCost, preferences.currency)}</div>
-              <p className="text-xs text-muted-foreground mt-1">Recurring monthly payments</p>
+              <div className="text-3xl font-bold">{formatCurrency(effectiveMonthlyCost, preferences.currency)}</div>
+              <p className="text-xs text-muted-foreground mt-1">Monthly + annualized yearly subscriptions</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -197,5 +206,5 @@ export function Overview() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }

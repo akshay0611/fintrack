@@ -16,7 +16,7 @@ export const useDashboardData = (dateRange: DateRange) => {
   return useMemo(() => {
     const filterByDateRange = (items: any[]) => {
       return items.filter((item) => {
-        const itemDate = new Date(item.date)
+        const itemDate = new Date(item.date || item.startDate) // Use startDate for subscriptions if applicable
         return (!dateRange?.from || itemDate >= dateRange.from) && (!dateRange?.to || itemDate <= dateRange.to)
       })
     }
@@ -24,27 +24,40 @@ export const useDashboardData = (dateRange: DateRange) => {
     const filteredIncomes = filterByDateRange(incomes)
     const filteredExpenses = filterByDateRange(expenses)
     const filteredInvestments = filterByDateRange(investments)
+    const filteredSubscriptions = filterByDateRange(subscriptions) // Filter subscriptions by date range
 
     const totalIncome = filteredIncomes.reduce((sum, income) => sum + income.amount, 0)
     const totalExpenses = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0)
     const totalInvestments = filteredInvestments.reduce((sum, investment) => sum + investment.amount, 0)
-    const monthlySubscriptionCost = subscriptions.reduce((sum, subscription) => {
-      if (subscription.billingCycle === "monthly") {
+
+    // Raw total of monthly subscriptions (only active ones)
+    const monthlySubscriptionCost = filteredSubscriptions.reduce((sum, subscription) => {
+      if (subscription.billingCycle === "monthly" && subscription.status === "active") {
         return sum + subscription.amount
       }
       return sum
     }, 0)
 
-    const availableBalance = totalIncome - totalExpenses - totalInvestments - monthlySubscriptionCost
-    const totalSavings = totalIncome - totalExpenses - monthlySubscriptionCost
+    // Raw total of yearly subscriptions (only active ones)
+    const yearlySubscriptionCost = filteredSubscriptions.reduce((sum, subscription) => {
+      if (subscription.billingCycle === "yearly" && subscription.status === "active") {
+        return sum + subscription.amount
+      }
+      return sum
+    }, 0)
+
+    // Adjust availableBalance and totalSavings to account for both monthly and yearly costs if needed
+    const availableBalance = totalIncome - totalExpenses - totalInvestments - monthlySubscriptionCost - (yearlySubscriptionCost / 12)
+    const totalSavings = totalIncome - totalExpenses - monthlySubscriptionCost - (yearlySubscriptionCost / 12)
 
     return {
       totalIncome,
       totalExpenses,
       totalInvestments,
-      monthlySubscriptionCost,
+      monthlySubscriptionCost, // Raw monthly total
       availableBalance,
       totalSavings,
+      yearlySubscriptionCost, // Raw yearly total
     }
   }, [incomes, expenses, investments, subscriptions, dateRange])
 }
@@ -71,4 +84,3 @@ export const useRecentTransactions = (dateRange: DateRange) => {
     return allTransactions.slice(0, 5) // Return only the 5 most recent transactions
   }, [incomes, expenses, investments, dateRange])
 }
-
