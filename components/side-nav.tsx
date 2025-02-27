@@ -30,16 +30,16 @@ const NavLink = ({ href, icon: Icon, label }: NavLinkProps) => {
     <div className="relative w-full flex items-center justify-center">
       <Link
         href={href}
-        className={`group relative flex items-center justify-center w-full p-3 rounded-lg transition-all
+        className={`group relative flex items-center justify-center w-full p-3 rounded-full transition-all
           ${
             isActive 
-              ? "bg-blue-100 dark:bg-gray-700 text-blue-600 dark:text-white"
+              ? "bg-blue-500 dark:bg-blue-600 text-white" // Changed to circle with blue
               : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400"
           }`}
       >
         <Icon className={`h-5 w-5 ${
           isActive 
-            ? "text-blue-600 dark:text-white" 
+            ? "text-white" // Icon stays white when active
             : "group-hover:text-blue-600 dark:group-hover:text-white"
         }`} />
 
@@ -56,9 +56,7 @@ const NavLink = ({ href, icon: Icon, label }: NavLinkProps) => {
 export function SideNav() {
   return (
     <aside className="fixed inset-y-0 left-0 z-30 flex w-16 flex-col items-center 
-  bg-white dark:bg-[#09090b] shadow-lg dark:shadow-gray-950 ring-1 ring-gray-700/50">
-
-  
+      bg-white dark:bg-[#09090b] shadow-lg dark:shadow-gray-950 ring-1 ring-gray-700/50">
       
       {/* Navigation Links */}
       <div className="space-y-4 mt-20">
