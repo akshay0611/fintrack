@@ -1,6 +1,6 @@
 "use client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowDown, ArrowUp, CreditCard, PiggyBank, Wallet, WalletCards } from "lucide-react";
+import { Plus, ArrowDown, ArrowUp, CreditCard, PiggyBank, Wallet, WalletCards } from "lucide-react";
 import { useDashboardData } from "@/lib/dashboard-data";
 import { usePreferences } from "@/lib/preferences-context";
 import { formatCurrency } from "@/lib/format-utils";
@@ -9,6 +9,9 @@ import type { DateRange } from "react-day-picker";
 import { Reports } from "./reports";
 import { RecentTransactions } from "@/components/recent-transactions";
 import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button"
+import { AddExpenseDialog } from "../components/expenses/add-expense-dialog";
+import { useState } from "react";
 
 interface DateRangeStore {
   dateRange: DateRange;
@@ -34,6 +37,7 @@ export function Overview() {
     totalSavings,
     yearlySubscriptionCost,
   } = useDashboardData(dateRange);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const { preferences } = usePreferences();
 
   const effectiveMonthlyCost = monthlySubscriptionCost + (yearlySubscriptionCost / 12);
@@ -205,6 +209,20 @@ export function Overview() {
           </div>
         </motion.div>
       </div>
+      <div className="fixed bottom-8 right-8">
+        <Button
+          onClick={() => setIsAddDialogOpen(true)}
+          size="icon"
+           className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"
+        >
+          <Plus className="h-6 w-6" />
+          <span className="sr-only">Add expense</span>
+        </Button>
+      </div>
+      <AddExpenseDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+      />
     </div>
   );
 }
