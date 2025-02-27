@@ -3,12 +3,44 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, DollarSign, PieChart, TrendingUp, CheckCircle, Shield, Zap } from "lucide-react"
+import { Lock, ArrowRight, DollarSign, PieChart, TrendingUp, CheckCircle, Shield, Zap, ChevronDown } from "lucide-react"
 import { useRouter } from "next/navigation"
 import type React from "react"
 
+const features = [
+  {
+    name: "Privacy",
+    description: "Your private data, such as name, price, and notes, etc., is securely encrypted in the database.",
+    icon: <Lock className="w-6 h-6 text-white" />,
+    gradient: "from-purple-600 to-pink-600",
+    screenshotUrl: "/demo/sync.jpg",
+  },
+  {
+    name: "Cross-Platform Sync",
+    description: "Access your data anywhere, anytime, on any device.",
+    icon: <Zap className="w-6 h-6 text-white" />,
+    gradient: "from-blue-600 to-cyan-600",
+    screenshotUrl: "/demo/sync.jpg",
+  },
+  {
+    name: "Custom Reports",
+    description: "Generate detailed reports tailored to your needs.",
+    icon: <PieChart className="w-6 h-6 text-white" />,
+    gradient: "from-green-600 to-lime-600",
+    screenshotUrl: "/demo/reports.jpg",
+  },
+  {
+    name: "Team Collaboration",
+    description: "Share and collaborate with your financial team.",
+    icon: <Shield className="w-6 h-6 text-white" />,
+    gradient: "from-orange-600 to-amber-600",
+    screenshotUrl: "/demo/collaboration.jpg",
+  },
+]
+
 export default function Hero() {
   const [mounted, setMounted] = useState(false)
+  const [selectedFeature, setSelectedFeature] = useState(0)
   const router = useRouter()
 
   useEffect(() => {
@@ -148,48 +180,80 @@ export default function Hero() {
           </div>
         </motion.div>
 
-        {/* Features Grid */}
+        {/* Interactive Features Section */}
         <motion.div
-  className="mt-24 w-full"
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: 1, duration: 0.5 }}
->
-  <h2 className="text-4xl font-bold mb-12 bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
-    Powerful Features
-  </h2>
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <FeatureDetailCard 
-      title="AI-Powered Insights"
-      description="Get smart recommendations powered by machine learning algorithms."
-      icon={<TrendingUp className="w-6 h-6 text-white" />}
-      gradient="from-purple-600 to-pink-600"
-    />
-    <FeatureDetailCard
-      title="Cross-Platform Sync"
-      description="Access your data anywhere, anytime, on any device."
-      icon={<Zap className="w-6 h-6 text-white" />}
-      gradient="from-blue-600 to-cyan-600"
-    />
-    <FeatureDetailCard
-      title="Custom Reports"
-      description="Generate detailed reports tailored to your needs."
-      icon={<PieChart className="w-6 h-6 text-white" />}
-      gradient="from-green-600 to-lime-600"
-    />
-    <FeatureDetailCard
-      title="Team Collaboration"
-      description="Share and collaborate with your financial team."
-      icon={<Shield className="w-6 h-6 text-white" />}
-      gradient="from-orange-600 to-amber-600"
-    />
-  </div>
-</motion.div>
+          className="mt-24 w-full"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.5 }}
+        >
+          <h2 className="text-4xl font-bold mb-12 bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
+            Powerful Features
+          </h2>
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Feature List */}
+            <div className="w-full lg:w-1/3 flex flex-col gap-2">
+              {features.map((feature, index) => (
+                <motion.div
+                  key={feature.name}
+                  className={`p-1 rounded-xl ${selectedFeature === index ? 'bg-gradient-to-r ' + feature.gradient : ''}`}
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => setSelectedFeature(index)}
+                >
+                  <div
+                    className={`flex items-center justify-between p-4 rounded-lg cursor-pointer ${
+                      selectedFeature === index
+                        ? 'bg-white dark:bg-gray-900 shadow-lg'
+                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg bg-gradient-to-r ${feature.gradient}`}>
+                        {feature.icon}
+                      </div>
+                      <h3 className="text-lg font-semibold dark:text-white">{feature.name}</h3>
+                    </div>
+                    <ChevronDown
+                      className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${
+                        selectedFeature === index ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </div>
+                  <motion.p
+                    className="text-white-600 dark:text-gray-300 px-4 py-2 text-sm"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{
+                      height: selectedFeature === index ? 'auto' : 0,
+                      opacity: selectedFeature === index ? 1 : 0
+                    }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {feature.description}
+                  </motion.p>
+                </motion.div>
+              ))}
+            </div>
+            {/* Preview Panel */}
+            <motion.div
+              className="w-full lg:w-2/3 rounded-xl overflow-hidden shadow-xl bg-white dark:bg-gray-900"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <img
+                src={features[selectedFeature].screenshotUrl}
+                alt={`${features[selectedFeature].name} preview`}
+                className="w-full h-[400px] object-cover"
+              />
+            </motion.div>
+          </div>
+        </motion.div>
       </motion.div>
     </div>
   )
 }
 
+// Existing components remain unchanged
 function FeatureCard({ icon, title, gradient }: { icon: React.ReactNode; title: string; gradient: string }) {
   return (
     <motion.div
@@ -219,28 +283,6 @@ function ReasonCard({ icon, title, description, gradient }: { icon: React.ReactN
         </div>
         <h3 className="text-2xl font-bold dark:text-white">{title}</h3>
         <p className="text-gray-600 dark:text-gray-300 text-center">{description}</p>
-      </div>
-    </motion.div>
-  )
-}
-
-function FeatureDetailCard({ title, description, icon, gradient }: { title: string; description: string; icon?: React.ReactNode; gradient?: string }) {
-  return (
-    <motion.div
-      className="group relative h-full p-1 rounded-xl bg-gradient-to-r from-transparent via-gray-100 to-transparent dark:via-gray-800 hover:shadow-lg transition-shadow"
-      whileHover={{ y: -3 }}
-    >
-      {gradient && (
-        <div className={`absolute inset-0 bg-gradient-to-r ${gradient} opacity-0 group-hover:opacity-10 transition-opacity rounded-xl`} />
-      )}
-      <div className="relative p-6 bg-white dark:bg-gray-900 rounded-xl h-full">
-        {icon && (
-          <div className={`mb-4 inline-block p-3 rounded-lg ${gradient} bg-gradient-to-r`}>
-            {icon}
-          </div>
-        )}
-        <h3 className="text-xl font-semibold mb-2 dark:text-white">{title}</h3>
-        <p className="text-gray-600 dark:text-gray-300">{description}</p>
       </div>
     </motion.div>
   )
