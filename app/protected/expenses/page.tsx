@@ -10,15 +10,61 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePreferences } from "@/lib/preferences-context";
 import { formatCurrency } from "@/lib/format-utils";
 import { ArrowUpRight, CreditCard, LineChart, TrendingDown } from "lucide-react";
+import { Button } from "@/components/ui/button"
+import { FileText } from "lucide-react"
+
+// CSV conversion utility
+const convertToCSV = (data: any[], headers: string[]) => {
+  const csv = [
+    headers.join(','),
+    ...data.map(item => 
+      headers.map(header => {
+        const key = header.toLowerCase()
+        const value = item[key] || ''
+        return `"${String(value).replace(/"/g, '""')}"`
+      }).join(',')
+    )
+  ].join('\n')
+  
+  return csv
+}
 
 export default function ExpensePage() {
   const totalExpenses = useExpenseStore((state) => state.getTotalExpenses());
   const fetchExpenses = useExpenseStore((state) => state.fetchExpenses);
+  const expenses = useExpenseStore((state) => state.expenses)
   const { preferences } = usePreferences();
 
   useEffect(() => {
     fetchExpenses();
   }, [fetchExpenses]);
+
+  const handleExportCSV = () => {
+    if (!expenses.length) {
+      alert('No expenses data to export')
+      return
+    }
+
+    const headers = ['Date', 'Amount', 'Currency', 'Category', 'Description']
+    const csvData = expenses.map(expenses => ({
+      date: new Date(expenses.date).toISOString().split('T')[0],
+      amount: expenses.amount,
+      currency: preferences.currency,
+      category: expenses.category,
+      description: expenses.description || ''
+    }))
+
+    const csvContent = convertToCSV(csvData, headers)
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', `expenses-export-${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-background to-background/95">
@@ -91,10 +137,22 @@ export default function ExpensePage() {
           {/* Expense History */}
           <Card className="relative overflow-hidden border bg-gradient-to-br from-card to-card/50">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <LineChart className="w-5 h-5 text-primary" />
-                Expense History
-              </CardTitle>
+            <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <LineChart className="w-5 h-5 text-primary" />
+                  Expense History
+                </CardTitle>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={handleExportCSV}
+                  className="gap-2"
+                  disabled={!expenses.length}
+                >
+                  <FileText className="w-4 h-4" />
+                  Export to CSV
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Suspense
