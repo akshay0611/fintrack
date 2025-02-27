@@ -23,6 +23,9 @@ import {
 import { toast } from "sonner"
 import { useSubscriptionStore } from "@/lib/subscriptions-data"
 import { usePreferences } from "@/lib/preferences-context"
+import { createClient } from '@/utils/supabase/client'
+
+const supabase = createClient()
 
 const formSchema = z.object({
   name: z.string().min(1, "Subscription name is required"),
@@ -45,7 +48,7 @@ export function AddSubscriptionForm({ onSuccess }: AddSubscriptionFormProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      amount: 0,  
+      amount: 0,
       billingCycle: "",
       startDate: new Date().toISOString().split('T')[0],
       status: "active",
@@ -60,11 +63,28 @@ export function AddSubscriptionForm({ onSuccess }: AddSubscriptionFormProps) {
     'INR': '₹'
   }
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    addSubscription(values)
-    toast.success("Subscription added successfully!")
-    form.reset()
-    onSuccess?.()
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      // Get current user
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !user) {
+        throw new Error("Please log in to add a subscription")
+      }
+
+      // Add subscription with user_id
+      await addSubscription({
+        ...values,
+        user_id: user.id
+      })
+
+      toast.success("Subscription added successfully!")
+      form.reset()
+      onSuccess?.()
+    } catch (error) {
+      console.error("Error adding subscription:", error)
+      toast.error(error instanceof Error ? error.message : "Failed to add subscription")
+    }
   }
 
   return (
@@ -90,7 +110,7 @@ export function AddSubscriptionForm({ onSuccess }: AddSubscriptionFormProps) {
             <FormItem>
               <FormLabel>Amount ({currencySymbols[preferences.currency]})</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="0.00" {...field} />
+                <Input type="number" step="0.01" placeholder="0.00" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -164,9 +184,14 @@ export function AddSubscriptionForm({ onSuccess }: AddSubscriptionFormProps) {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">Add Subscription</Button>
+        <Button 
+          type="submit" 
+          className="w-full" 
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? "Adding..." : "Add Subscription"}
+        </Button>
       </form>
     </Form>
   )
 }
-

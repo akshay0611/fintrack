@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Card,
   CardContent,
@@ -32,6 +32,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { AddSubscriptionDialog } from "./add-subscription-dialog"
+import { createClient } from '@/utils/supabase/client'
+
+const supabase = createClient()
 
 type SortDirection = 'asc' | 'desc'
 type SortField = 'name' | 'price' | 'renewalDate' | 'startDate' | 'notes' | 'status'
@@ -60,9 +63,23 @@ export function SubscriptionList() {
     { id: 'status', label: 'Status', isVisible: true },
   ])
   
-  const subscriptions = useSubscriptionStore((state) => state.subscriptions)
-  const deleteSubscription = useSubscriptionStore((state) => state.deleteSubscription)
+  const { subscriptions, deleteSubscription, fetchSubscriptions } = useSubscriptionStore()
   const { preferences } = usePreferences()
+
+  useEffect(() => {
+    const loadSubscriptions = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await fetchSubscriptions(user.id)
+        }
+      } catch (error) {
+        console.error('Error fetching subscriptions:', error)
+        toast.error("Failed to load subscriptions")
+      }
+    }
+    loadSubscriptions()
+  }, [fetchSubscriptions])
 
   const sortSubscriptions = (subscriptions: any[]) => {
     return [...subscriptions].sort((a, b) => {
@@ -94,9 +111,24 @@ export function SubscriptionList() {
     return sortSubscriptions(filtered)
   }, [subscriptions, search, sort])
 
-  const handleDelete = (id: string) => {
-    deleteSubscription(id)
-    toast.success("Subscription deleted successfully!")
+  const handleDelete = async (id: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error("Please log in to delete a subscription")
+      }
+
+      const subscriptionToDelete = subscriptions.find(sub => sub.id === id)
+      if (!subscriptionToDelete || subscriptionToDelete.user_id !== user.id) {
+        throw new Error("You don't have permission to delete this subscription")
+      }
+
+      await deleteSubscription(id)
+      toast.success("Subscription deleted successfully!")
+    } catch (error) {
+      console.error("Error deleting subscription:", error)
+      toast.error(error instanceof Error ? error.message : "Failed to delete subscription")
+    }
   }
 
   const toggleColumn = (columnId: SortField) => {
@@ -262,17 +294,21 @@ export function SubscriptionList() {
                       )}
                       {columns.find(col => col.id === 'status')?.isVisible && (
                         <TableCell>
-                         <Badge 
-  variant="secondary"
-  className={`${item.status === 'active' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
->
-  {item.status}
-</Badge>
+                          <Badge 
+                            variant="secondary"
+                            className={`${item.status === 'active' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
+                          >
+                            {item.status}
+                          </Badge>
                         </TableCell>
                       )}
                       <TableCell className="text-right">
                         <EditSubscriptionForm subscription={item} />
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handleDelete(item.id)}
+                        >
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Delete subscription</span>
                         </Button>
@@ -302,4 +338,3 @@ export function SubscriptionList() {
     </Card>
   )
 }
-

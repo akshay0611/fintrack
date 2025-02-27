@@ -32,13 +32,16 @@ import { toast } from "sonner"
 import { useSubscriptionStore, SubscriptionEntry } from "@/lib/subscriptions-data"
 import { Pencil } from 'lucide-react'
 import { usePreferences } from "@/lib/preferences-context"
+import { createClient } from '@/utils/supabase/client'
+
+const supabase = createClient()
 
 const formSchema = z.object({
   name: z.string().min(1, "Subscription name is required"),
   amount: z.preprocess((val) => (typeof val === "string" ? Number(val) : val), z.number().min(1, "Amount is required")),
   billingCycle: z.string().min(1, "Billing cycle is required"),
   startDate: z.string().min(1, "Start date is required"),
-  status: z.enum(["active", "cancelled"]), // Added status field
+  status: z.enum(["active", "cancelled"]),
 })
 
 interface EditSubscriptionFormProps {
@@ -54,8 +57,7 @@ export function EditSubscriptionForm({ subscription }: EditSubscriptionFormProps
     USD: '$',
     EUR: '€',
     GBP: '£',
-    // Add other currency symbols as needed
-  };
+  }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,14 +66,30 @@ export function EditSubscriptionForm({ subscription }: EditSubscriptionFormProps
       amount: subscription.amount,
       billingCycle: subscription.billingCycle,
       startDate: subscription.startDate,
-      status: subscription.status, // Set default value for status
+      status: subscription.status,
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    editSubscription(subscription.id, values)
-    toast.success("Subscription updated successfully!")
-    setOpen(false)
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      // Check if user is authenticated
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        throw new Error("Please log in to edit a subscription")
+      }
+
+      // Verify the subscription belongs to the current user
+      if (subscription.user_id !== user.id) {
+        throw new Error("You don't have permission to edit this subscription")
+      }
+
+      await editSubscription(subscription.id, values)
+      toast.success("Subscription updated successfully!")
+      setOpen(false)
+    } catch (error) {
+      console.error("Error updating subscription:", error)
+      toast.error(error instanceof Error ? error.message : "Failed to update subscription")
+    }
   }
 
   return (
@@ -108,7 +126,13 @@ export function EditSubscriptionForm({ subscription }: EditSubscriptionFormProps
                 <FormItem>
                   <FormLabel>Amount ({currencySymbols[preferences.currency]})</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="0.00" {...field} />
+                    <Input 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="0.00" 
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -154,23 +178,29 @@ export function EditSubscriptionForm({ subscription }: EditSubscriptionFormProps
               name="status"
               render={({ field }) => (
                 <FormItem>
-        <FormLabel>Status</FormLabel>
-        <Select onValueChange={field.onChange} defaultValue={field.value}>
-          <FormControl>
-            <SelectTrigger>
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-          </FormControl>
-          <SelectContent>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
-        <FormMessage />
-      </FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">Update Subscription</Button>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? "Updating..." : "Update Subscription"}
+            </Button>
           </form>
         </Form>
       </DialogContent>
