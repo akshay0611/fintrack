@@ -64,6 +64,7 @@ export function EditSubscriptionForm({ subscription }: EditSubscriptionFormProps
       amount: subscription.amount,
       billingCycle: subscription.billingCycle,
       startDate: subscription.startDate,
+      status: subscription.status, // Set default value for status
     },
   })
 
@@ -148,6 +149,27 @@ export function EditSubscriptionForm({ subscription }: EditSubscriptionFormProps
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+        <FormLabel>Status</FormLabel>
+        <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <FormControl>
+            <SelectTrigger>
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+          </FormControl>
+          <SelectContent>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+        <FormMessage />
+      </FormItem>
+              )}
+            />
             <Button type="submit" className="w-full">Update Subscription</Button>
           </form>
         </Form>
@@ -155,4 +177,3 @@ export function EditSubscriptionForm({ subscription }: EditSubscriptionFormProps
     </Dialog>
   )
 }
-
