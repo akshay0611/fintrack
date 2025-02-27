@@ -10,15 +10,61 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { usePreferences } from "@/lib/preferences-context"
 import { formatCurrency } from "@/lib/format-utils"
 import { ArrowUpRight, DollarSign, LineChart, TrendingUp, Wallet } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { FileText } from "lucide-react"
+
+// CSV conversion utility
+const convertToCSV = (data: any[], headers: string[]) => {
+  const csv = [
+    headers.join(','),
+    ...data.map(item => 
+      headers.map(header => {
+        const key = header.toLowerCase()
+        const value = item[key] || ''
+        return `"${String(value).replace(/"/g, '""')}"`
+      }).join(',')
+    )
+  ].join('\n')
+  
+  return csv
+}
 
 export default function IncomePage() {
   const totalIncome = useIncomeStore((state) => state.getTotalIncome())
   const fetchIncomes = useIncomeStore((state) => state.fetchIncomes)
+  const incomes = useIncomeStore((state) => state.incomes)
   const { preferences } = usePreferences()
 
   useEffect(() => {
     fetchIncomes()
   }, [fetchIncomes])
+
+  const handleExportCSV = () => {
+    if (!incomes.length) {
+      alert('No income data to export')
+      return
+    }
+
+    const headers = ['Date', 'Amount', 'Currency', 'Category', 'Description']
+    const csvData = incomes.map(income => ({
+      date: new Date(income.date).toISOString().split('T')[0],
+      amount: income.amount,
+      currency: preferences.currency,
+      category: income.category,
+      description: income.description || ''
+    }))
+
+    const csvContent = convertToCSV(csvData, headers)
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', `income-export-${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-background to-background/95">
@@ -107,10 +153,22 @@ export default function IncomePage() {
           {/* Income History */}
           <Card className="relative overflow-hidden border bg-gradient-to-br from-card to-card/50">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <LineChart className="w-5 h-5 text-primary" />
-                Income History
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <LineChart className="w-5 h-5 text-primary" />
+                  Income History
+                </CardTitle>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={handleExportCSV}
+                  className="gap-2"
+                  disabled={!incomes.length}
+                >
+                  <FileText className="w-4 h-4" />
+                  Export to CSV
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Suspense
@@ -134,4 +192,3 @@ export default function IncomePage() {
     </div>
   )
 }
-
