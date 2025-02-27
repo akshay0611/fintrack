@@ -69,9 +69,11 @@ Ensure you have the following installed:
 
 ---
 
-## 🎬 Demo
+## 📊 Expense Tracking Overview
 
-*Coming soon: *
+Get insights into your spending habits with categorized expense breakdowns.
+
+![Fintrack Dashboard](fintrack.png)
 
 
 
