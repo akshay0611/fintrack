@@ -35,7 +35,7 @@ import { usePreferences } from "@/lib/preferences-context"
 
 const formSchema = z.object({
   name: z.string().min(1, "Subscription name is required"),
-  amount: z.string().min(1, "Amount is required").transform(Number),
+  amount: z.preprocess((val) => (typeof val === "string" ? Number(val) : val), z.number().min(1, "Amount is required")),
   billingCycle: z.string().min(1, "Billing cycle is required"),
   startDate: z.string().min(1, "Start date is required"),
   status: z.enum(["active", "cancelled"]), // Added status field
