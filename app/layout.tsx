@@ -39,9 +39,13 @@ export default function RootLayout({
         >
           <main className="min-h-screen flex flex-col items-center">
             <div className="flex-1 w-full flex flex-col gap-20 items-center">
-              <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-                <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-                  
+              <nav className="w-full flex justify-start border-b border-b-foreground/10 h-16 px-5 sticky top-0 bg-background z-50">
+                <div className="w-full max-w-5xl flex items-center p-3 px-5 text-sm">
+                <Link href="/" className="flex items-center gap-2">
+                    <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      FinTrack
+                    </span>
+                  </Link>
                  <div className="absolute top-0 right-0 flex items-center gap-4 p-4">
                  {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
                 <ThemeSwitcher />
@@ -51,15 +55,18 @@ export default function RootLayout({
               <div className="flex flex-col gap-20 max-w-5xl p-5">
                 {children}
               </div>
-              <footer className="w-full flex flex-col items-center justify-center mx-auto text-center text-xs gap-2 py-8">
-  <div className="w-full border-t mt-4"></div>
-  <p className="text-gray-600 dark:text-gray-400">
-    © {new Date().getFullYear()} FinTrack. All rights reserved.
-  </p>
-  <p className="text-gray-600 dark:text-gray-400">
-    Built with ❤️ by Akshay
-  </p>
-</footer>
+              <footer className="w-full border-t border-foreground/10 mt-24">
+                <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">
+                      © {new Date().getFullYear()} FinTrack. All rights reserved.
+                    </p>
+                    <p className="mt-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      Built with ❤️ by Akshay
+                    </p>
+                  </div>
+                </div>
+              </footer>
             </div>
           </main>
         </ThemeProvider>
