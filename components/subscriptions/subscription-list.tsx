@@ -262,12 +262,12 @@ export function SubscriptionList() {
                       )}
                       {columns.find(col => col.id === 'status')?.isVisible && (
                         <TableCell>
-                          <Badge 
-                            variant="secondary"
-                            className={`${item.status === 'active' ? 'bg-green-500' : 'bg-red-500'} text-white`}
-                          >
-                            {item.status}
-                          </Badge>
+                         <Badge 
+  variant="secondary"
+  className={`${item.status === 'active' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
+>
+  {item.status}
+</Badge>
                         </TableCell>
                       )}
                       <TableCell className="text-right">
