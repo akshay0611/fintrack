@@ -27,24 +27,7 @@ import { toast } from "sonner"
 import { useExpenseStore } from "@/lib/expenses-data"
 import { usePreferences } from "@/lib/preferences-context"
 
-const categoryToEmoji: Record<string, string> = {
-  food: '🍔',
-  grocery: '🛒',
-  medical: '🏥',
-  bills: '📅',
-  education: '🎓',
-  online_order: '📦',
-  rent: '🏠',
-  entertainment: '🎮',
-  shopping: '🛍️',
-  travel: '✈️',
-  sports: '⚽',
-  emi: '💳',
-  savings: '💰',
-  debt: '💸',
-  loan: '🏦',
-  others: '✨',
-};
+import { categoryToEmoji } from '@/utils/category-emojis';
 
 const formSchema = z.object({
   amount: z.string().min(1, "Amount is required").transform(Number),

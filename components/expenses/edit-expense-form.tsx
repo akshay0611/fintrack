@@ -35,6 +35,7 @@ import { toast } from "sonner"
 import { useExpenseStore, ExpenseEntry } from "@/lib/expenses-data"
 import { Pencil } from 'lucide-react'
 import { usePreferences } from "@/lib/preferences-context"
+import { categoryToEmoji } from '@/utils/category-emojis';
 
 const formSchema = z.object({
   amount: z.string().min(1, "Amount is required").transform(Number),
@@ -126,52 +127,52 @@ export function EditExpenseForm({ expense }: EditExpenseFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel className="text-primary font-semibold uppercase text-xs tracking-wider">
-                          Essentials
-                        </SelectLabel>
-                        <SelectItem value="food">Food</SelectItem>
-                        <SelectItem value="grocery">Grocery</SelectItem>
-                        <SelectItem value="medical">Medical</SelectItem>
-                      </SelectGroup>
-                      <SelectSeparator className="my-2" />
-                      <SelectGroup>
-                        <SelectLabel className="text-blue-500 dark:text-blue-400 font-semibold uppercase text-xs tracking-wider">
-                          Expenses
-                        </SelectLabel>
-                        <SelectItem value="bills">Bills</SelectItem>
-                        <SelectItem value="education">Education</SelectItem>
-                        <SelectItem value="online_order">Online Order</SelectItem>
-                        <SelectItem value="rent">Rent</SelectItem>
-                      </SelectGroup>
-                      <SelectSeparator className="my-2" />
-                      <SelectGroup>
-                        <SelectLabel className="text-purple-500 dark:text-purple-400 font-semibold uppercase text-xs tracking-wider">
-                          Leisure
-                        </SelectLabel>
-                        <SelectItem value="entertainment">Entertainment</SelectItem>
-                        <SelectItem value="shopping">Shopping</SelectItem>
-                        <SelectItem value="travel">Travel</SelectItem>
-                        <SelectItem value="sports">Sports</SelectItem>
-                      </SelectGroup>
-                      <SelectSeparator className="my-2" />
-                      <SelectGroup>
-                        <SelectLabel className="text-orange-500 dark:text-orange-400 font-semibold uppercase text-xs tracking-wider">
-                          Payments
-                        </SelectLabel>
-                        <SelectItem value="emi">EMI</SelectItem>
-                        <SelectItem value="savings">Savings</SelectItem>
-                        <SelectItem value="debt">Debt</SelectItem>
-                        <SelectItem value="loan">Loan</SelectItem>
-                      </SelectGroup>
-                      <SelectSeparator className="my-2" />
-                      <SelectGroup>
-                        <SelectLabel className="text-gray-500 dark:text-gray-400 font-semibold uppercase text-xs tracking-wider">
-                          Other
-                        </SelectLabel>
-                        <SelectItem value="others">Others</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
+  <SelectGroup>
+    <SelectLabel className="text-primary font-semibold uppercase text-xs tracking-wider">
+      Essentials
+    </SelectLabel>
+    <SelectItem value="food">{categoryToEmoji.food} Food</SelectItem>
+    <SelectItem value="grocery">{categoryToEmoji.grocery} Grocery</SelectItem>
+    <SelectItem value="medical">{categoryToEmoji.medical} Medical</SelectItem>
+  </SelectGroup>
+  <SelectSeparator className="my-2" />
+  <SelectGroup>
+    <SelectLabel className="text-blue-500 dark:text-blue-400 font-semibold uppercase text-xs tracking-wider">
+      Expenses
+    </SelectLabel>
+    <SelectItem value="bills">{categoryToEmoji.bills} Bills</SelectItem>
+    <SelectItem value="education">{categoryToEmoji.education} Education</SelectItem>
+    <SelectItem value="online_order">{categoryToEmoji.online_order} Online Order</SelectItem>
+    <SelectItem value="rent">{categoryToEmoji.rent} Rent</SelectItem>
+  </SelectGroup>
+  <SelectSeparator className="my-2" />
+  <SelectGroup>
+    <SelectLabel className="text-purple-500 dark:text-purple-400 font-semibold uppercase text-xs tracking-wider">
+      Leisure
+    </SelectLabel>
+    <SelectItem value="entertainment">{categoryToEmoji.entertainment} Entertainment</SelectItem>
+    <SelectItem value="shopping">{categoryToEmoji.shopping} Shopping</SelectItem>
+    <SelectItem value="travel">{categoryToEmoji.travel} Travel</SelectItem>
+    <SelectItem value="sports">{categoryToEmoji.sports} Sports</SelectItem>
+  </SelectGroup>
+  <SelectSeparator className="my-2" />
+  <SelectGroup>
+    <SelectLabel className="text-orange-500 dark:text-orange-400 font-semibold uppercase text-xs tracking-wider">
+      Payments
+    </SelectLabel>
+    <SelectItem value="emi">{categoryToEmoji.emi} EMI</SelectItem>
+    <SelectItem value="savings">{categoryToEmoji.savings} Savings</SelectItem>
+    <SelectItem value="debt">{categoryToEmoji.debt} Debt</SelectItem>
+    <SelectItem value="loan">{categoryToEmoji.loan} Loan</SelectItem>
+  </SelectGroup>
+  <SelectSeparator className="my-2" />
+  <SelectGroup>
+    <SelectLabel className="text-gray-500 dark:text-gray-400 font-semibold uppercase text-xs tracking-wider">
+      Other
+    </SelectLabel>
+    <SelectItem value="others">{categoryToEmoji.others} Others</SelectItem>
+  </SelectGroup>
+</SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>

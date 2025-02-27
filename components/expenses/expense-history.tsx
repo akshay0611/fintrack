@@ -41,24 +41,7 @@ import { AddExpenseDialog } from "./add-expense-dialog"
 import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, subWeeks, subMonths, isWithinInterval } from "date-fns"
 
 
-const categoryToEmoji: Record<string, string> = {
-  food: '🍔',
-  grocery: '🛒',
-  medical: '🏥',
-  bills: '📅',
-  education: '🎓',
-  online_order: '📦',
-  rent: '🏠',
-  entertainment: '🎮',
-  shopping: '🛍️',
-  travel: '✈️',
-  sports: '⚽',
-  emi: '💳',
-  savings: '💰',
-  debt: '💸',
-  loan: '🏦',
-  others: '✨',
-};
+import { categoryToEmoji } from '@/utils/category-emojis';
 
 type TimeFilter = 'all' | 'this_week' | 'this_month' | 'past_week' | 'past_month'
 type SortDirection = 'asc' | 'desc'
