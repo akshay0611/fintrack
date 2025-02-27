@@ -1,4 +1,4 @@
-"use client"
+"use client" 
 
 import { useState, useMemo } from "react"
 import {
@@ -150,14 +150,6 @@ export function IncomeHistory() {
               View all your income transactions
             </CardDescription>
           </div>
-          <Button
-            onClick={() => setIsAddDialogOpen(true)}
-            size="icon"
-            className="rounded-full"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="sr-only">Add income</span>
-          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -273,6 +265,16 @@ export function IncomeHistory() {
           </Table>
         </div>
       </CardContent>
+      <div className="fixed bottom-8 right-8">
+        <Button
+          onClick={() => setIsAddDialogOpen(true)}
+          size="icon"
+           className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"
+        >
+          <Plus className="h-6 w-6" />
+          <span className="sr-only">Add expense</span>
+        </Button>
+      </div>
       <AddIncomeDialog
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
