@@ -40,6 +40,26 @@ import {
 import { AddExpenseDialog } from "./add-expense-dialog"
 import { startOfWeek, startOfMonth, endOfWeek, endOfMonth, subWeeks, subMonths, isWithinInterval } from "date-fns"
 
+
+const categoryToEmoji: Record<string, string> = {
+  food: '🍔',
+  grocery: '🛒',
+  medical: '🏥',
+  bills: '📅',
+  education: '🎓',
+  online_order: '📦',
+  rent: '🏠',
+  entertainment: '🎮',
+  shopping: '🛍️',
+  travel: '✈️',
+  sports: '⚽',
+  emi: '💳',
+  savings: '💰',
+  debt: '💸',
+  loan: '🏦',
+  others: '✨',
+};
+
 type TimeFilter = 'all' | 'this_week' | 'this_month' | 'past_week' | 'past_month'
 type SortDirection = 'asc' | 'desc'
 type SortField = 'name' | 'amount' | 'date' | 'category' | 'paidVia'
@@ -288,18 +308,23 @@ export function ExpenseHistory() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredExpenses.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={visibleColumns.length + 1} className="text-center text-muted-foreground">
-                      No expense entries found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredExpenses.map((item) => (
-                    <TableRow key={item.id}>
-                      {columns.find(col => col.id === 'name')?.isVisible && (
-                        <TableCell>{item.description}</TableCell>
-                      )}
+  {filteredExpenses.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={visibleColumns.length + 1} className="text-center text-muted-foreground">
+        No expense entries found
+      </TableCell>
+    </TableRow>
+  ) : (
+    filteredExpenses.map((item) => (
+      <TableRow key={item.id}>
+        {columns.find(col => col.id === 'name')?.isVisible && (
+          <TableCell>
+            <div className="flex items-center gap-2">
+              <span>{categoryToEmoji[item.category] || '❓'}</span>
+              {item.description}
+            </div>
+          </TableCell>
+)}
                       {columns.find(col => col.id === 'amount')?.isVisible && (
                         <TableCell>{formatCurrency(item.amount, preferences.currency)}</TableCell>
                       )}
