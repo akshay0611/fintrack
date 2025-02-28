@@ -65,7 +65,7 @@ const NavLink = ({ href, icon: Icon, label, shortcut }: NavLinkProps) => {
       </Link>
     </div>
   );
-};
+}; 
 
 export function SideNav() {
   // Handle keyboard navigation
