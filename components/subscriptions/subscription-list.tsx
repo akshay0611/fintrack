@@ -169,44 +169,7 @@ export function SubscriptionList() {
               </CardDescription>
             </div>
           </div>
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="py-4">
-                <CardTitle className="text-sm font-medium">TOTAL SUBSCRIPTIONS</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{subscriptions.length}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="py-4">
-                <CardTitle className="text-sm font-medium">ACTIVE - CANCELLED</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{activeSubscriptions} - {cancelledSubscriptions}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="py-4">
-                <CardTitle className="text-sm font-medium">TOTAL ACTIVE - MONTHLY</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(monthlyTotal, preferences.currency)}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="py-4">
-                <CardTitle className="text-sm font-medium">TOTAL ACTIVE - YEARLY</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(yearlyTotal, preferences.currency)}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+         
         </div>
       </CardHeader>
       <CardContent>
