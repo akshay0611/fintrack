@@ -10,9 +10,18 @@ import { DateRangePicker } from "@/components/date-range-picker"; // Add this im
 import { Reports } from "./reports";
 import { RecentTransactions } from "@/components/recent-transactions";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import { AddExpenseDialog } from "../components/expenses/add-expense-dialog";
 import { useState } from "react";
+
+// Define the time period options
+const timePeriodOptions = [
+  { label: "Today", value: "today" },
+  { label: "Last 7 days", value: "last7days" },
+  { label: "Last 30 days", value: "last30days" },
+  { label: "Month to Date", value: "monthToDate" },
+  { label: "Year to Date", value: "yearToDate" },
+];
 
 interface DateRange {
   from: Date;
@@ -21,7 +30,9 @@ interface DateRange {
 
 interface DateRangeStore {
   dateRange: DateRange;
+  timePeriod: string; // New field for time period
   setDateRange: (range: DateRange) => void;
+  setTimePeriod: (period: string) => void; // New method to set time period
 }
 
 // Export useDateRangeStore
@@ -30,11 +41,13 @@ export const useDateRangeStore = create<DateRangeStore>((set) => ({
     from: new Date(new Date().getFullYear(), 0, 1),
     to: new Date(),
   },
+  timePeriod: "today", // Default time period
   setDateRange: (range: DateRange) => set({ dateRange: range }),
+  setTimePeriod: (period: string) => set({ timePeriod: period }),
 }));
 
 export function Overview() {
-  const { dateRange } = useDateRangeStore();
+  const { dateRange, timePeriod, setDateRange, setTimePeriod } = useDateRangeStore();
   const {
     totalIncome,
     totalExpenses,
@@ -64,12 +77,60 @@ export function Overview() {
     show: { y: 0, opacity: 1 },
   };
 
+  // Function to update date range based on selected time period
+  const updateDateRangeByPeriod = (period: string) => {
+    const today = new Date();
+    let from, to;
+
+    switch (period) {
+      case "today":
+        from = new Date(today);
+        to = new Date(today);
+        break;
+      case "last7days":
+        from = new Date(today.setDate(today.getDate() - 7));
+        to = new Date();
+        break;
+      case "last30days":
+        from = new Date(today.setDate(today.getDate() - 30));
+        to = new Date();
+        break;
+      case "monthToDate":
+        from = new Date(today.getFullYear(), today.getMonth(), 1);
+        to = new Date();
+        break;
+      case "yearToDate":
+        from = new Date(today.getFullYear(), 0, 1);
+        to = new Date();
+        break;
+      default:
+        from = new Date(today.getFullYear(), 0, 1);
+        to = new Date();
+    }
+
+    setDateRange({ from, to });
+    setTimePeriod(period);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <header className="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard Overview</h1>
         <div className="flex items-center gap-4">
           <DateRangePicker />
+          <div className="relative">
+            <select
+              value={timePeriod}
+              onChange={(e) => updateDateRangeByPeriod(e.target.value)}
+               className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-white dark:bg-[#09090b] text-gray-900 dark:text-white"
+            >
+              {timePeriodOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </header>
 
@@ -203,7 +264,7 @@ export function Overview() {
         <Button
           onClick={() => setIsAddDialogOpen(true)}
           size="icon"
-           className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"
+          className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"
         >
           <Plus className="h-6 w-6" />
           <span className="sr-only">Add expense</span>
