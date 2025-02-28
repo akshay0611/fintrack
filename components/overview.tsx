@@ -1,11 +1,12 @@
-"use client"
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, ArrowDown, ArrowUp, CreditCard, PiggyBank, Wallet, WalletCards } from "lucide-react";
 import { useDashboardData } from "@/lib/dashboard-data";
 import { usePreferences } from "@/lib/preferences-context";
 import { formatCurrency } from "@/lib/format-utils";
 import { create } from "zustand";
-import type { DateRange } from "react-day-picker";
+import { DateRangePicker } from "@/components/date-range-picker"; // Add this import
 import { Reports } from "./reports";
 import { RecentTransactions } from "@/components/recent-transactions";
 import { motion } from "framer-motion";
@@ -13,12 +14,18 @@ import { Button } from "@/components/ui/button"
 import { AddExpenseDialog } from "../components/expenses/add-expense-dialog";
 import { useState } from "react";
 
+interface DateRange {
+  from: Date;
+  to?: Date; // Optional 'to' date
+}
+
 interface DateRangeStore {
   dateRange: DateRange;
   setDateRange: (range: DateRange) => void;
 }
 
-const useDateRangeStore = create<DateRangeStore>((set) => ({
+// Export useDateRangeStore
+export const useDateRangeStore = create<DateRangeStore>((set) => ({
   dateRange: {
     from: new Date(new Date().getFullYear(), 0, 1),
     to: new Date(),
@@ -37,7 +44,7 @@ export function Overview() {
     totalSavings,
     yearlySubscriptionCost,
   } = useDashboardData(dateRange);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const { preferences } = usePreferences();
 
   const effectiveMonthlyCost = monthlySubscriptionCost + (yearlySubscriptionCost / 12);
@@ -59,28 +66,11 @@ export function Overview() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      <header className="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <header className="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard Overview</h1>
-        <p className="text-muted-foreground mt-2 sm:mt-0">
-          {dateRange.from ? (
-            <>
-              <span className="font-medium">
-                {dateRange.from.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-              </span>
-              {dateRange.to && (
-                <>
-                  {" "}
-                  -{" "}
-                  <span className="font-medium">
-                    {dateRange.to.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                  </span>
-                </>
-              )}
-            </>
-          ) : (
-            <span>Select a date range</span>
-          )}
-        </p>
+        <div className="flex items-center gap-4">
+          <DateRangePicker />
+        </div>
       </header>
 
       <motion.div
