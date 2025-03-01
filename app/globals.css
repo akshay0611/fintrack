@@ -78,3 +78,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* globals.css */
+.logo-shift {
+  margin-left: 2rem; /* Shifts the logo 2rem (32px) to the right - adjust as needed */
+  transition: margin-left 0.3s ease; /* Optional: Smooth transition for hover effects */
+}

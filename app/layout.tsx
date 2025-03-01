@@ -41,16 +41,16 @@ export default function RootLayout({
             <div className="flex-1 w-full flex flex-col gap-20 items-center">
               <nav className="w-full flex justify-start border-b border-b-foreground/10 h-16 px-5 sticky top-0 bg-background z-50">
                 <div className="w-full max-w-5xl flex items-center p-3 px-5 text-sm">
-                <Link href="/" className="flex items-center gap-2">
+                  <Link href="/" className="flex items-center gap-2 logo-shift">
                     <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                       FinTrack
                     </span>
                   </Link>
-                 <div className="absolute top-0 right-0 flex items-center gap-4 p-4">
-                 {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
-                <ThemeSwitcher />
+                  <div className="absolute top-0 right-0 flex items-center gap-4 p-4">
+                    {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
+                    <ThemeSwitcher />
+                  </div>
                 </div>
-                </div> 
               </nav>
               <div className="flex flex-col gap-20 max-w-5xl p-5">
                 {children}
