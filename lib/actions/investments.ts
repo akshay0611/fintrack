@@ -57,7 +57,7 @@ export async function createInvestmentPurchase(input: InvestmentPurchaseInput): 
     return { data: null, error: error.message }
   }
 
-  revalidatePath("/protected/overview")
+  revalidatePath("/protected")
   revalidatePath("/protected/investments")
   return { data, error: null }
 }
@@ -68,6 +68,17 @@ export async function deleteInvestmentHolding(id: string): Promise<InvestmentRes
 
   if (!user) {
     return { data: null, error: "Authentication required" }
+  }
+
+  const { data: holding } = await supabase
+    .from("investment_holdings")
+    .select("transaction_id")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single()
+
+  if (!holding) {
+    return { data: null, error: "Investment holding not found or access denied" }
   }
 
   const { data, error } = await supabase
@@ -82,7 +93,19 @@ export async function deleteInvestmentHolding(id: string): Promise<InvestmentRes
     return { data: null, error: error.message }
   }
 
-  revalidatePath("/protected/overview")
+  if (holding.transaction_id) {
+    const { error: txnError } = await supabase
+      .from("transactions")
+      .delete()
+      .eq("id", holding.transaction_id)
+      .eq("user_id", user.id)
+
+    if (txnError) {
+      return { data, error: txnError.message }
+    }
+  }
+
+  revalidatePath("/protected")
   revalidatePath("/protected/investments")
   return { data, error: null }
 }
@@ -97,10 +120,7 @@ export async function getInvestmentHoldings() {
 
   const { data, error } = await supabase
     .from("investment_holdings")
-    .select(`
-      *,
-      categories:categories(id, name, icon)
-    `)
+    .select("*")
     .eq("user_id", user.id)
     .order("purchase_date", { ascending: false })
 
@@ -108,5 +128,10 @@ export async function getInvestmentHoldings() {
     return { data: null, error: error.message }
   }
 
-  return { data, error: null }
+  const holdings = (data || []).map((h: any) => ({
+    ...h,
+    amount: h.total_amount,
+  }))
+
+  return { data: holdings, error: null }
 }

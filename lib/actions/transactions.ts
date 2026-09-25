@@ -47,7 +47,7 @@ export async function createTransaction(input: TransactionInput): Promise<Transa
     return { data: null, error: error.message }
   }
 
-  revalidatePath("/protected/overview")
+  revalidatePath("/protected")
   return { data, error: null }
 }
 
@@ -80,7 +80,7 @@ export async function updateTransaction(
     return { data: null, error: error.message }
   }
 
-  revalidatePath("/protected/overview")
+  revalidatePath("/protected")
   return { data, error: null }
 }
 
@@ -104,7 +104,7 @@ export async function deleteTransaction(id: string): Promise<TransactionResult> 
     return { data: null, error: error.message }
   }
 
-  revalidatePath("/protected/overview")
+  revalidatePath("/protected")
   return { data, error: null }
 }
 
@@ -139,5 +139,13 @@ export async function getTransactions(dateFrom?: string, dateTo?: string) {
     return { data: null, error: error.message }
   }
 
-  return { data, error: null }
+  const normalized = (data || []).map((t: any) => ({
+    ...t,
+    date: t.transaction_date,
+    paidVia: t.notes ?? null,
+    category_name: t.categories?.name ?? null,
+    category_icon: t.categories?.icon ?? null,
+  }))
+
+  return { data: normalized, error: null }
 }

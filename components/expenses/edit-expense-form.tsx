@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { Pencil } from 'lucide-react'
 import { usePreferences } from "@/lib/preferences-context"
@@ -67,6 +67,7 @@ export function EditExpenseForm({ expense }: EditExpenseFormProps) {
     } else {
       toast.success("Expense updated successfully!")
       setOpen(false)
+      window.dispatchEvent(new CustomEvent("fintrack:transactions-changed"))
     }
   }
 
@@ -75,8 +76,8 @@ export function EditExpenseForm({ expense }: EditExpenseFormProps) {
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /><span className="sr-only">Edit expense</span></Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader><DialogTitle>Edit Expense</DialogTitle></DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[min(85vh,32rem)] overflow-y-auto">
+        <DialogHeader><DialogTitle>Edit Expense</DialogTitle><DialogDescription>Update this expense transaction.</DialogDescription></DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField control={form.control} name="amount" render={({ field }) => (

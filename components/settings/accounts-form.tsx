@@ -59,7 +59,10 @@ const accountFormSchema = z.object({
   currency: z.enum(["USD", "EUR", "GBP", "INR"], {
     required_error: "Please select a currency.",
   }),
-  initial_balance: z.preprocess((val) => (val === "" ? undefined : val), z.number().optional()),
+  initial_balance: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : Number(val)),
+    z.number({ invalid_type_error: "Initial balance must be a number" }).min(0).optional()
+  ),
 })
 
 type AccountFormValues = z.infer<typeof accountFormSchema>

@@ -42,21 +42,27 @@ export function SubscriptionList() {
   const [categories, setCategories] = useState<{ id: string; name: string; icon: string | null }[]>([])
   const { preferences } = usePreferences()
 
+  async function loadData() {
+    try {
+      const result = await getSubscriptions()
+      if (result.data) { setSubscriptions(result.data) }
+    } catch (error) { console.error("Failed to load subscriptions:", error); toast.error("Failed to load subscriptions") }
+    try {
+      const catsResult = await getCategories("expense")
+      if (catsResult.data) {
+        setCategories(catsResult.data.map((c: any) => ({ id: c.id, name: c.name, icon: c.icon })))
+      }
+    } catch { }
+  }
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const result = await getSubscriptions()
-        if (result.data) { setSubscriptions(result.data) }
-      } catch (error) { console.error("Failed to load subscriptions:", error); toast.error("Failed to load subscriptions") }
-      try {
-        const catsResult = await getCategories("expense")
-        if (catsResult.data) {
-          setCategories(catsResult.data.map((c: any) => ({ id: c.id, name: c.name, icon: c.icon })))
-        }
-      } catch { }
-    }
     loadData()
   }, [])
+
+  const notifyChanged = () => {
+    loadData()
+    window.dispatchEvent(new CustomEvent("fintrack:subscriptions-changed"))
+  }
 
   const sortSubscriptions = (items: Subscription[]) => {
     return [...items].sort((a, b) => {
@@ -81,7 +87,7 @@ export function SubscriptionList() {
   const handleDelete = async (id: string) => {
     try {
       const result = await deleteSubscription(id)
-      if (result.error) { toast.error(result.error) } else { setSubscriptions(subscriptions.filter(s => s.id !== id)); toast.success("Subscription deleted successfully!") }
+      if (result.error) { toast.error(result.error) } else { setSubscriptions(subscriptions.filter(s => s.id !== id)); toast.success("Subscription deleted successfully!"); notifyChanged() }
     } catch (error) { console.error("Error deleting subscription:", error); toast.error("Failed to delete subscription") }
   }
 
@@ -112,15 +118,15 @@ export function SubscriptionList() {
                   {columns.find(col => col.id === 'startDate')?.isVisible && <TableCell>{formatDate(item.start_date, preferences.dateFormat)}</TableCell>}
                   {columns.find(col => col.id === 'notes')?.isVisible && <TableCell>{item.notes}</TableCell>}
                   {columns.find(col => col.id === 'status')?.isVisible && <TableCell><Badge variant="secondary" className={`${item.status === 'active' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}>{item.status}</Badge></TableCell>}
-                  <TableCell className="text-right"><EditSubscriptionForm subscription={item} /><Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}><Trash2 className="h-4 w-4" /><span className="sr-only">Delete subscription</span></Button></TableCell>
+                  <TableCell className="text-right"><EditSubscriptionForm subscription={item} onSuccess={notifyChanged} /><Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}><Trash2 className="h-4 w-4" /><span className="sr-only">Delete subscription</span></Button></TableCell>
                 </TableRow>
               ))
             )}
           </TableBody></Table></div>
         </div>
       </CardContent>
-      <div className="fixed bottom-8 right-8"><Button onClick={() => setIsAddDialogOpen(true)} size="icon" className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"><Plus className="h-6 w-6" /><span className="sr-only">Add subscription</span></Button></div>
-      <AddSubscriptionDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+      <div className="fixed bottom-20 right-4 z-40 sm:bottom-8 sm:right-8"><Button onClick={() => setIsAddDialogOpen(true)} size="icon" className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"><Plus className="h-6 w-6" /><span className="sr-only">Add subscription</span></Button></div>
+      <AddSubscriptionDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} onSuccess={notifyChanged} />
     </Card>
   )
 }

@@ -28,7 +28,7 @@ export async function getCategories(type?: "income" | "expense"): Promise<Catego
   let query = supabase
     .from("categories")
     .select("*")
-    .eq("is_system", true)
+    .or(`is_system.eq.true,user_id.eq.${user.id}`)
     .order("name", { ascending: true })
 
   if (type) {

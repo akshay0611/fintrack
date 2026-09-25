@@ -88,32 +88,36 @@ export function ExpenseHistory() {
   const [categories, setCategories] = useState<{ id: string; name: string; icon: string | null }[]>([])
   const { preferences } = usePreferences()
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const result = await getTransactions()
-        if (result.data) {
-          const expenseTxns = result.data.map((t: Transaction) => ({
-              ...t,
-              category_name: t.categories?.name || t.category,
-              category_icon: t.categories?.icon || null,
-            })).filter((t: Transaction) => t.type === 'expense')
-          setTransactions(expenseTxns)
-        }
-      } catch (error) {
-        console.error("Failed to fetch transactions:", error)
-        toast.error("Failed to load transactions")
-      } finally {
-        setLoading(false)
-      }
-      try {
-        const catsResult = await getCategories("expense")
-        if (catsResult.data) {
-          setCategories(catsResult.data.map((c: any) => ({ id: c.id, name: c.name, icon: c.icon })))
-        }
-      } catch { }
+  async function loadData() {
+  try {
+    const result = await getTransactions()
+    if (result.data) {
+      const expenseTxns = result.data.map((t: Transaction) => ({
+          ...t,
+          category_name: t.categories?.name || t.category_name || t.category,
+          category_icon: t.categories?.icon || null,
+        })).filter((t: Transaction) => t.type === 'expense')
+      setTransactions(expenseTxns)
     }
+  } catch (error) {
+    console.error("Failed to fetch transactions:", error)
+    toast.error("Failed to load transactions")
+  } finally {
+    setLoading(false)
+  }
+  try {
+    const catsResult = await getCategories("expense")
+    if (catsResult.data) {
+      setCategories(catsResult.data.map((c: any) => ({ id: c.id, name: c.name, icon: c.icon })))
+    }
+  } catch { }
+}
+
+  useEffect(() => {
     loadData()
+    const onChanged = () => loadData()
+    window.addEventListener("fintrack:transactions-changed", onChanged)
+    return () => window.removeEventListener("fintrack:transactions-changed", onChanged)
   }, [])
 
   const getTimeFilteredExpenses = (items: Transaction[], filter: TimeFilter) => {
@@ -149,7 +153,7 @@ export function ExpenseHistory() {
     let filtered = getTimeFilteredExpenses(transactions, timeFilter)
     filtered = filtered.filter(expense => {
       const matchesSearch = (expense.description?.toLowerCase().includes(search.toLowerCase()) || (expense.category_name || '').toLowerCase().includes(search.toLowerCase()))
-      const matchesCategory = category === "all" || expense.category === category
+      const matchesCategory = category === "all" || expense.category_id === category
       return matchesSearch && matchesCategory
     })
     return sortExpenses(filtered)
@@ -272,7 +276,7 @@ export function ExpenseHistory() {
           </div>
         </div>
       </CardContent>
-      <div className="fixed bottom-8 right-8">
+      <div className="fixed bottom-20 right-4 z-40 sm:bottom-8 sm:right-8">
         <Button onClick={() => setIsAddDialogOpen(true)} size="icon" className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"><Plus className="h-6 w-6" /><span className="sr-only">Add expense</span></Button>
       </div>
       <AddExpenseDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />

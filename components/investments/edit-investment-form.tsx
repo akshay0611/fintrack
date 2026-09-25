@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePreferences } from "@/lib/preferences-context"
@@ -21,8 +21,8 @@ export function EditInvestmentForm({ investment }: EditInvestmentFormProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild><Button variant="ghost" size="icon" onClick={handleClick}><Pencil className="h-4 w-4" /><span className="sr-only">Edit investment</span></Button></DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader><DialogTitle>Edit Investment</DialogTitle></DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[min(85vh,32rem)] overflow-y-auto">
+        <DialogHeader><DialogTitle>Edit Investment</DialogTitle><DialogDescription>Investment records are immutable in V2.</DialogDescription></DialogHeader>
         <div className="space-y-4">
           <div><label className="text-sm font-medium">Name</label><p className="text-sm">{investment.name}</p></div>
           <div><label className="text-sm font-medium">Amount ({currencySymbols[preferences.currency]})</label><p className="text-sm">{investment.amount.toFixed(2)}</p></div>

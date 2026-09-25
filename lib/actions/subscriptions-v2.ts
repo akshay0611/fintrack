@@ -47,7 +47,7 @@ export async function createSubscription(input: SubscriptionInput): Promise<Subs
     return { data: null, error: error.message }
   }
 
-  revalidatePath("/protected/overview")
+  revalidatePath("/protected")
   revalidatePath("/protected/subscriptions")
   return { data, error: null }
 }
@@ -81,7 +81,7 @@ export async function updateSubscription(id: string, input: Partial<Subscription
     return { data: null, error: error.message }
   }
 
-  revalidatePath("/protected/overview")
+  revalidatePath("/protected")
   revalidatePath("/protected/subscriptions")
   return { data, error: null }
 }

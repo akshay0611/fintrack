@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { Pencil } from "lucide-react"
 import { usePreferences } from "@/lib/preferences-context"
@@ -39,14 +39,14 @@ export function EditIncomeForm({ income }: EditIncomeFormProps) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const result = await updateTransaction(income.id, { amount: values.amount, category_id: values.category_id, description: values.description || "", transaction_date: values.date })
-    if (result.error) { toast.error(result.error) } else { toast.success("Income updated successfully!"); setOpen(false) }
+    if (result.error) { toast.error(result.error) } else { toast.success("Income updated successfully!"); setOpen(false); window.dispatchEvent(new CustomEvent("fintrack:transactions-changed")) }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild><Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /><span className="sr-only">Edit income</span></Button></DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader><DialogTitle>Edit Income</DialogTitle></DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[min(85vh,32rem)] overflow-y-auto">
+        <DialogHeader><DialogTitle>Edit Income</DialogTitle><DialogDescription>Update this income transaction.</DialogDescription></DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField control={form.control} name="amount" render={({ field }) => (<FormItem><FormLabel>Amount ({currencySymbols[preferences.currency]})</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} onChange={(e) => field.onChange(Number(e.target.value))} /></FormControl><FormMessage /></FormItem>)} />

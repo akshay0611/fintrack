@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner"
 import { usePreferences } from "@/lib/preferences-context"
 import { createTransaction } from "@/lib/actions/transactions"
-import { getAccounts } from "@/lib/actions/accounts"
+import { getActiveAccounts } from "@/lib/actions/accounts"
 import { getCategories } from "@/lib/actions/categories"
 import { useState, useEffect } from "react"
 
@@ -37,7 +37,7 @@ export function AddIncomeForm({ onSuccess }: AddIncomeFormProps) {
 
   useEffect(() => {
     const loadData = async () => {
-      const accountsResult = await getAccounts()
+      const accountsResult = await getActiveAccounts()
       if (accountsResult.data) {
         setAccounts(accountsResult.data.map((a: any) => ({ id: a.id, name: a.name })))
       }

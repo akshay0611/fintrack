@@ -44,14 +44,18 @@ export function InvestmentHistory() {
   const [investments, setInvestments] = useState<Investment[]>([])
   const { preferences } = usePreferences()
 
+  async function loadInvestments() {
+  try {
+    const result = await getInvestmentHoldings()
+    if (result.data) { setInvestments(result.data) }
+  } catch (error) { console.error("Failed to fetch investments:", error) }
+}
+
   useEffect(() => {
-    const loadInvestments = async () => {
-      try {
-        const result = await getInvestmentHoldings()
-        if (result.data) { setInvestments(result.data) }
-      } catch (error) { console.error("Failed to fetch investments:", error) }
-    }
     loadInvestments()
+    const onChanged = () => loadInvestments()
+    window.addEventListener("fintrack:investments-changed", onChanged)
+    return () => window.removeEventListener("fintrack:investments-changed", onChanged)
   }, [])
 
   const getTimeFilteredInvestments = (items: Investment[], filter: TimeFilter) => {
@@ -97,7 +101,7 @@ export function InvestmentHistory() {
 
   const handleDelete = async (id: string) => {
     const result = await deleteInvestmentHolding(id)
-    if (result.error) { toast.error(result.error) } else { setInvestments(investments.filter(i => i.id !== id)); toast.success("Investment deleted successfully!") }
+    if (result.error) { toast.error(result.error) } else { setInvestments(investments.filter(i => i.id !== id)); toast.success("Investment deleted successfully!"); window.dispatchEvent(new CustomEvent("fintrack:investments-changed")) }
   }
 
   const toggleColumn = (columnId: SortField) => {
@@ -140,7 +144,7 @@ export function InvestmentHistory() {
           </TableBody></Table></div>
         </div>
       </CardContent>
-      <div className="fixed bottom-8 right-8"><Button onClick={() => setIsAddDialogOpen(true)} size="icon" className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"><Plus className="h-6 w-6" /><span className="sr-only">Add investment</span></Button></div>
+      <div className="fixed bottom-20 right-4 z-40 sm:bottom-8 sm:right-8"><Button onClick={() => setIsAddDialogOpen(true)} size="icon" className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"><Plus className="h-6 w-6" /><span className="sr-only">Add investment</span></Button></div>
       <AddInvestmentDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
     </Card>
   )

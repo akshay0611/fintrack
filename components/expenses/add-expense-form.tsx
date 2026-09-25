@@ -26,7 +26,7 @@ import {
 import { toast } from "sonner"
 import { usePreferences } from "@/lib/preferences-context"
 import { createTransaction } from "@/lib/actions/transactions"
-import { getAccounts } from "@/lib/actions/accounts"
+import { getActiveAccounts } from "@/lib/actions/accounts"
 import { getCategories } from "@/lib/actions/categories"
 import { useState, useEffect } from "react"
 import { categoryToEmoji } from '@/utils/category-emojis';
@@ -71,7 +71,7 @@ export function AddExpenseForm({ onSuccess }: AddExpenseFormProps) {
 
   useEffect(() => {
     const loadData = async () => {
-      const accountsResult = await getAccounts()
+      const accountsResult = await getActiveAccounts()
       if (accountsResult.data) {
         setAccounts(accountsResult.data.map((a: any) => ({ id: a.id, name: a.name })))
       }

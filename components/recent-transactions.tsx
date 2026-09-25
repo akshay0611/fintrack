@@ -5,29 +5,38 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { usePreferences } from "@/lib/preferences-context"
 import { formatCurrency, formatDate } from "@/lib/format-utils"
 import { DateRange } from "react-day-picker"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { getTransactions } from "@/lib/actions/transactions"
+import { useDateRangeStore } from "@/lib/hooks/use-date-range-store"
 
-interface RecentTransactionsProps { className?: string; dateRange: DateRange | undefined }
+interface RecentTransactionsProps { className?: string; dateRange?: DateRange | undefined }
 
 export function RecentTransactions({ className, dateRange }: RecentTransactionsProps) {
   const [transactions, setTransactions] = useState<any[]>([])
+  const storeRange = useDateRangeStore((s) => s.dateRange)
+  const effectiveRange = dateRange ?? storeRange
   const { preferences } = usePreferences()
 
   useEffect(() => {
     const loadTransactions = async () => {
       try {
-        const result = await getTransactions(dateRange?.from?.toISOString().split('T')[0], dateRange?.to?.toISOString().split('T')[0])
+        const result = await getTransactions()
         if (result.data) { setTransactions(result.data) }
       } catch { }
     }
     loadTransactions()
-  }, [dateRange])
+  }, [])
 
-  const recentTransactions = transactions
-    .filter((t: any) => t.type === 'income' || t.type === 'expense')
-    .sort((a: any, b: any) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime())
-    .slice(0, 5)
+  const recentTransactions = useMemo(() => {
+    return transactions
+      .filter((t: any) => {
+        if (t.type !== 'income' && t.type !== 'expense') return false
+        const tDate = new Date(t.transaction_date)
+        return (!effectiveRange?.from || tDate >= effectiveRange.from) && (!effectiveRange?.to || tDate <= effectiveRange.to)
+      })
+      .sort((a: any, b: any) => new Date(b.transaction_date).getTime() - new Date(a.transaction_date).getTime())
+      .slice(0, 5)
+  }, [transactions, effectiveRange])
 
   return (
     <Card className={className}>
@@ -37,7 +46,7 @@ export function RecentTransactions({ className, dateRange }: RecentTransactionsP
           <div key={transaction.id} className="flex items-center">
             <div className="ml-4 space-y-1">
               <p className="text-sm font-medium leading-none">
-                {transaction.type === 'income' ? transaction.category : transaction.type === 'expense' ? transaction.category : transaction.name}
+                {transaction.category_name || transaction.category || transaction.type}
               </p>
               <p className="text-sm text-muted-foreground">{formatDate(transaction.transaction_date, preferences.dateFormat)}</p>
             </div>

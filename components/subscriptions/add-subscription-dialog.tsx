@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { usePreferences } from "@/lib/preferences-context"
@@ -10,9 +10,9 @@ import { createSubscription } from "@/lib/actions/subscriptions-v2"
 import { getCategories } from "@/lib/actions/categories"
 import { toast } from "sonner"
 
-interface AddSubscriptionDialogProps { open: boolean; onOpenChange: (open: boolean) => void }
+interface AddSubscriptionDialogProps { open: boolean; onOpenChange: (open: boolean) => void; onSuccess?: () => void }
 
-export function AddSubscriptionDialog({ open, onOpenChange }: AddSubscriptionDialogProps) {
+export function AddSubscriptionDialog({ open, onOpenChange, onSuccess }: AddSubscriptionDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { preferences } = usePreferences()
   const currencySymbols: Record<string, string> = { USD: '$', EUR: '€', GBP: '£', INR: '₹' }
@@ -39,15 +39,15 @@ export function AddSubscriptionDialog({ open, onOpenChange }: AddSubscriptionDia
     setIsSubmitting(true)
     try {
       const result = await createSubscription({ name, amount: parseFloat(amount), cycle, start_date: startDate, next_renewal_date: nextRenewalDate, notes: undefined, category_id: categoryId || undefined })
-      if (result.error) { toast.error(result.error) } else { toast.success("Subscription added successfully!"); onOpenChange(false) }
+      if (result.error) { toast.error(result.error) } else { toast.success("Subscription added successfully!"); onSuccess?.(); onOpenChange(false) }
     } catch (error: any) { toast.error(error.message || "Failed to add subscription") }
     finally { setIsSubmitting(false) }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader><DialogTitle>Add Subscription</DialogTitle></DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[min(85vh,32rem)] overflow-y-auto">
+        <DialogHeader><DialogTitle>Add Subscription</DialogTitle><DialogDescription>Add a new recurring subscription.</DialogDescription></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div><label className="text-sm font-medium">Name</label><input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full border rounded px-3 py-2" required /></div>
           <div><label className="text-sm font-medium">Amount ({currencySymbols[preferences.currency]})</label><input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full border rounded px-3 py-2" required /></div>

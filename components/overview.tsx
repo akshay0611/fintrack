@@ -33,11 +33,15 @@ export function Overview() {
   useEffect(() => {
     const loadTransactions = async () => {
       try {
-        const result = await getTransactions(dateRange.from?.toISOString().split('T')[0], dateRange.to?.toISOString().split('T')[0])
+        if (!dateRange.from) return
+        const result = await getTransactions()
         if (result.data) { setTransactions(result.data) }
       } catch (error) { console.error("Failed to fetch transactions:", error) }
     }
     loadTransactions()
+    const onChanged = () => loadTransactions()
+    window.addEventListener("fintrack:transactions-changed", onChanged)
+    return () => window.removeEventListener("fintrack:transactions-changed", onChanged)
   }, [dateRange.from, dateRange.to])
 
   const filteredByDate = useMemo(() => {
@@ -77,7 +81,7 @@ export function Overview() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}><div className="bg-card rounded-xl border shadow-sm p-1"><div className="p-4"><h2 className="text-xl font-semibold mb-4">Financial Reports</h2><Reports dateRange={dateRange} /></div></div></motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}><div className="bg-card rounded-xl border shadow-sm p-1"><div className="p-4"><h2 className="text-xl font-semibold mb-4">Recent Transactions</h2><RecentTransactions dateRange={dateRange} /></div></div></motion.div>
       </div>
-      <div className="fixed bottom-8 right-8"><Button onClick={() => setIsAddDialogOpen(true)} size="icon" className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"><Plus className="h-6 w-6" /><span className="sr-only">Add expense</span></Button></div>
+      <div className="fixed bottom-20 right-4 z-40 sm:bottom-8 sm:right-8"><Button onClick={() => setIsAddDialogOpen(true)} size="icon" className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"><Plus className="h-6 w-6" /><span className="sr-only">Add expense</span></Button></div>
       <AddExpenseDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
     </div>
   )

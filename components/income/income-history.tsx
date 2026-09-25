@@ -50,29 +50,33 @@ export function IncomeHistory() {
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([])
   const { preferences } = usePreferences()
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const result = await getTransactions()
-        if (result.data) {
-          const incomeData = result.data.map((t: any) => ({
-            ...t,
-            category_name: t.categories?.name || t.category,
-          })).filter((t: any) => t.type === 'income')
-          setIncomes(incomeData)
-        }
-      } catch (error) {
-        console.error("Failed to fetch incomes:", error)
-        toast.error("Failed to load incomes")
-      }
-      try {
-        const catsResult = await getCategories("income")
-        if (catsResult.data) {
-          setCategories(catsResult.data.map((c: any) => ({ id: c.id, name: c.name })))
-        }
-      } catch { }
+  async function loadData() {
+  try {
+    const result = await getTransactions()
+    if (result.data) {
+      const incomeData = result.data.map((t: any) => ({
+        ...t,
+        category_name: t.categories?.name || t.category_name || t.category,
+      })).filter((t: any) => t.type === 'income')
+      setIncomes(incomeData)
     }
+  } catch (error) {
+    console.error("Failed to fetch incomes:", error)
+    toast.error("Failed to load incomes")
+  }
+  try {
+    const catsResult = await getCategories("income")
+    if (catsResult.data) {
+      setCategories(catsResult.data.map((c: any) => ({ id: c.id, name: c.name })))
+    }
+  } catch { }
+}
+
+  useEffect(() => {
     loadData()
+    const onChanged = () => loadData()
+    window.addEventListener("fintrack:transactions-changed", onChanged)
+    return () => window.removeEventListener("fintrack:transactions-changed", onChanged)
   }, [])
 
   const getTimeFilteredIncomes = (items: any[], filter: TimeFilter) => {
@@ -92,7 +96,7 @@ export function IncomeHistory() {
 
   const filteredIncomes = getTimeFilteredIncomes(incomes, timeFilter).filter(income => {
     const matchesSearch = income.description?.toLowerCase().includes(search.toLowerCase()) || (income.category_name || '').toLowerCase().includes(search.toLowerCase())
-    const matchesCategory = category === "all" || income.category === category
+    const matchesCategory = category === "all" || income.category_id === category
     return matchesSearch && matchesCategory
   })
 
@@ -141,7 +145,7 @@ export function IncomeHistory() {
           )}
         </TableBody></Table></div>
       </CardContent>
-      <div className="fixed bottom-8 right-8"><Button onClick={() => setIsAddDialogOpen(true)} size="icon" className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"><Plus className="h-6 w-6" /><span className="sr-only">Add income</span></Button></div>
+      <div className="fixed bottom-20 right-4 z-40 sm:bottom-8 sm:right-8"><Button onClick={() => setIsAddDialogOpen(true)} size="icon" className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"><Plus className="h-6 w-6" /><span className="sr-only">Add income</span></Button></div>
       <AddIncomeDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
     </Card>
   )

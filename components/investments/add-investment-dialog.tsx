@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { usePreferences } from "@/lib/preferences-context"
 import { createInvestmentPurchase } from "@/lib/actions/investments"
-import { getAccounts } from "@/lib/actions/accounts"
+import { getActiveAccounts } from "@/lib/actions/accounts"
 import { toast } from "sonner"
 
 const investmentCategories = [
@@ -34,7 +34,7 @@ export function AddInvestmentDialog({ open, onOpenChange }: AddInvestmentDialogP
 
   useEffect(() => {
     const loadAccounts = async () => {
-      const result = await getAccounts()
+      const result = await getActiveAccounts()
       if (result.data) {
         const investmentAccounts = result.data.filter((a: any) => a.type === 'investment')
         setAccounts(investmentAccounts.map((a: any) => ({ id: a.id, name: a.name })))
@@ -51,15 +51,15 @@ export function AddInvestmentDialog({ open, onOpenChange }: AddInvestmentDialogP
     setIsSubmitting(true)
     try {
       const result = await createInvestmentPurchase({ account_id: accountId, name, category: category as any, units: parseFloat(units), unit_price: parseFloat(unitPrice) })
-      if (result.error) { toast.error(result.error) } else { toast.success("Investment added successfully!"); onOpenChange(false) }
+      if (result.error) { toast.error(result.error) } else { toast.success("Investment added successfully!"); onOpenChange(false); window.dispatchEvent(new CustomEvent("fintrack:investments-changed")) }
     } catch (error: any) { toast.error(error.message || "Failed to add investment") }
     finally { setIsSubmitting(false) }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader><DialogTitle>Add Investment</DialogTitle></DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[min(85vh,32rem)] overflow-y-auto">
+        <DialogHeader><DialogTitle>Add Investment</DialogTitle><DialogDescription>Create a new investment purchase.</DialogDescription></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div><label className="text-sm font-medium">Account</label>
             <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full border rounded px-3 py-2" required>
