@@ -1,13 +1,12 @@
-// components/date-range-picker.tsx
-"use client";
+"use client"
 
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { useDateRangeStore } from "@/components/overview"; // Adjust the import path based on your file structure
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
+import { useDateRangeStore } from "@/lib/hooks/use-date-range-store"
 
 interface DateRange {
   from: Date;
@@ -15,7 +14,7 @@ interface DateRange {
 }
 
 export function DateRangePicker() {
-  const { dateRange, setDateRange } = useDateRangeStore();
+  const { dateRange, setDateRange } = useDateRangeStore()
 
   return (
     <Popover>

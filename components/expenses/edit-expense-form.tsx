@@ -1,234 +1,136 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-  SelectSeparator,
-} from "@/components/ui/select"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { useExpenseStore, ExpenseEntry } from "@/lib/expenses-data"
 import { Pencil } from 'lucide-react'
 import { usePreferences } from "@/lib/preferences-context"
-import { categoryToEmoji } from '@/utils/category-emojis';
+import { updateTransaction } from "@/lib/actions/transactions"
+import { getCategories } from "@/lib/actions/categories"
 
 const formSchema = z.object({
   amount: z.string().min(1, "Amount is required").transform(Number),
-  category: z.string().min(1, "Category is required"),
+  category_id: z.string().min(1, "Category is required"),
   description: z.string().optional(),
   date: z.string().min(1, "Date is required"),
   paidVia: z.string().min(1, "Payment method is required"),
 })
 
 interface EditExpenseFormProps {
-  expense: ExpenseEntry
+  expense: { id: string; description: string; amount: number; category_id: string; date: string; paidVia: string }
 }
 
 export function EditExpenseForm({ expense }: EditExpenseFormProps) {
   const [open, setOpen] = useState(false)
-  const editExpense = useExpenseStore((state) => state.editExpense)
   const { preferences } = usePreferences()
-  const currencySymbols = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    INR: '₹'
-  };
+  const currencySymbols = { USD: '$', EUR: '€', GBP: '£', INR: '₹' }
+  const [categories, setCategories] = useState<{ id: string; name: string; icon: string | null }[]>([])
+
+  useEffect(() => {
+    const loadCats = async () => {
+      const result = await getCategories("expense")
+      if (result.data) {
+        setCategories(result.data.map((c: any) => ({ id: c.id, name: c.name, icon: c.icon })))
+      }
+    }
+    loadCats()
+  }, [])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      amount: expense.amount, // Initialize as a number
-      category: expense.category,
+      amount: expense.amount,
+      category_id: expense.category_id,
       description: expense.description,
       date: expense.date,
       paidVia: expense.paidVia || "",
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    const expenseData = {
-      ...values,
-      description: values.description || "", // Ensure description is always a string
-    };
-
-    // Await the editExpense call to handle errors appropriately
-    try {
-      editExpense(expense.id, expenseData);
-      toast.success("Expense updated successfully!");
-      setOpen(false);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update expense");
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const result = await updateTransaction(expense.id, {
+      amount: values.amount,
+      category_id: values.category_id,
+      description: values.description || "",
+      transaction_date: values.date,
+      notes: values.paidVia,
+    })
+    if (result.error) {
+      toast.error(result.error)
+    } else {
+      toast.success("Expense updated successfully!")
+      setOpen(false)
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Pencil className="h-4 w-4" />
-          <span className="sr-only">Edit expense</span>
-        </Button>
+        <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /><span className="sr-only">Edit expense</span></Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Edit Expense</DialogTitle>
-        </DialogHeader>
+        <DialogHeader><DialogTitle>Edit Expense</DialogTitle></DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount ({currencySymbols[preferences.currency]})</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="0.00" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-  <SelectGroup>
-    <SelectLabel className="text-primary font-semibold uppercase text-xs tracking-wider">
-      Essentials
-    </SelectLabel>
-    <SelectItem value="food">{categoryToEmoji.food} Food</SelectItem>
-    <SelectItem value="grocery">{categoryToEmoji.grocery} Grocery</SelectItem>
-    <SelectItem value="medical">{categoryToEmoji.medical} Medical</SelectItem>
-  </SelectGroup>
-  <SelectSeparator className="my-2" />
-  <SelectGroup>
-    <SelectLabel className="text-blue-500 dark:text-blue-400 font-semibold uppercase text-xs tracking-wider">
-      Expenses
-    </SelectLabel>
-    <SelectItem value="bills">{categoryToEmoji.bills} Bills</SelectItem>
-    <SelectItem value="education">{categoryToEmoji.education} Education</SelectItem>
-    <SelectItem value="online_order">{categoryToEmoji.online_order} Online Order</SelectItem>
-    <SelectItem value="rent">{categoryToEmoji.rent} Rent</SelectItem>
-  </SelectGroup>
-  <SelectSeparator className="my-2" />
-  <SelectGroup>
-    <SelectLabel className="text-purple-500 dark:text-purple-400 font-semibold uppercase text-xs tracking-wider">
-      Leisure
-    </SelectLabel>
-    <SelectItem value="entertainment">{categoryToEmoji.entertainment} Entertainment</SelectItem>
-    <SelectItem value="shopping">{categoryToEmoji.shopping} Shopping</SelectItem>
-    <SelectItem value="travel">{categoryToEmoji.travel} Travel</SelectItem>
-    <SelectItem value="sports">{categoryToEmoji.sports} Sports</SelectItem>
-  </SelectGroup>
-  <SelectSeparator className="my-2" />
-  <SelectGroup>
-    <SelectLabel className="text-orange-500 dark:text-orange-400 font-semibold uppercase text-xs tracking-wider">
-      Payments
-    </SelectLabel>
-    <SelectItem value="emi">{categoryToEmoji.emi} EMI</SelectItem>
-    <SelectItem value="savings">{categoryToEmoji.savings} Savings</SelectItem>
-    <SelectItem value="debt">{categoryToEmoji.debt} Debt</SelectItem>
-    <SelectItem value="loan">{categoryToEmoji.loan} Loan</SelectItem>
-  </SelectGroup>
-  <SelectSeparator className="my-2" />
-  <SelectGroup>
-    <SelectLabel className="text-gray-500 dark:text-gray-400 font-semibold uppercase text-xs tracking-wider">
-      Other
-    </SelectLabel>
-    <SelectItem value="others">{categoryToEmoji.others} Others</SelectItem>
-  </SelectGroup>
-</SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Groceries..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="paidVia"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Paid Via</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select payment method" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="cash">Cash</SelectItem>
-                      <SelectItem value="credit_card">Credit Card</SelectItem>
-                      <SelectItem value="debit_card">Debit Card</SelectItem>
-                      <SelectItem value="e_wallet">E-Wallet</SelectItem>
-                      <SelectItem value="net_banking">NetBanking</SelectItem>
-                      <SelectItem value="upi">UPI</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormField control={form.control} name="amount" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Amount ({currencySymbols[preferences.currency]})</FormLabel>
+                <FormControl><Input type="number" placeholder="0.00" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="category_id" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.icon ? `${cat.icon} ` : ''}{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="description" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl><Input placeholder="Groceries..." {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="date" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Date</FormLabel>
+                <FormControl><Input type="date" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="paidVia" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Paid Via</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl><SelectTrigger><SelectValue placeholder="Select payment method" /></SelectTrigger></FormControl>
+                  <SelectContent>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="credit_card">Credit Card</SelectItem>
+                    <SelectItem value="debit_card">Debit Card</SelectItem>
+                    <SelectItem value="e_wallet">E-Wallet</SelectItem>
+                    <SelectItem value="net_banking">NetBanking</SelectItem>
+                    <SelectItem value="upi">UPI</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )} />
             <Button type="submit" className="w-full">Update Expense</Button>
           </form>
         </Form>
@@ -236,4 +138,3 @@ export function EditExpenseForm({ expense }: EditExpenseFormProps) {
     </Dialog>
   )
 }
-

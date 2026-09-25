@@ -24,14 +24,17 @@ import {
   SelectSeparator,
 } from "@/components/ui/select"
 import { toast } from "sonner"
-import { useExpenseStore } from "@/lib/expenses-data"
 import { usePreferences } from "@/lib/preferences-context"
-
+import { createTransaction } from "@/lib/actions/transactions"
+import { getAccounts } from "@/lib/actions/accounts"
+import { getCategories } from "@/lib/actions/categories"
+import { useState, useEffect } from "react"
 import { categoryToEmoji } from '@/utils/category-emojis';
 
 const formSchema = z.object({
+  account_id: z.string().min(1, "Account is required"),
   amount: z.string().min(1, "Amount is required").transform(Number),
-  category: z.string().min(1, "Category is required"),
+  category_id: z.string().min(1, "Category is required"),
   description: z.string().optional(),
   date: z.string().min(1, "Date is required"),
   paidVia: z.string().min(1, "Payment method is required"),
@@ -42,14 +45,17 @@ interface AddExpenseFormProps {
 }
 
 export function AddExpenseForm({ onSuccess }: AddExpenseFormProps) {
-  const addExpense = useExpenseStore((state) => state.addExpense)
   const { preferences } = usePreferences()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [accounts, setAccounts] = useState<{ id: string; name: string }[]>([])
+  const [expenseCategories, setExpenseCategories] = useState<{ id: string; name: string; icon: string | null }[]>([])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      amount: 0, // Initialize as a number
-      category: "",
+      account_id: "",
+      amount: 0,
+      category_id: "",
       description: "",
       date: new Date().toISOString().split('T')[0],
       paidVia: "",
@@ -63,27 +69,73 @@ export function AddExpenseForm({ onSuccess }: AddExpenseFormProps) {
     'INR': '₹'
   }
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  useEffect(() => {
+    const loadData = async () => {
+      const accountsResult = await getAccounts()
+      if (accountsResult.data) {
+        setAccounts(accountsResult.data.map((a: any) => ({ id: a.id, name: a.name })))
+      }
+      const catsResult = await getCategories("expense")
+      if (catsResult.data) {
+        setExpenseCategories(catsResult.data.map((c: any) => ({ id: c.id, name: c.name, icon: c.icon })))
+      }
+    }
+    loadData()
+  }, [])
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     const expenseData = {
-      ...values,
-      description: values.description || "", // Ensure description is always a string
-    };
-  
-    // Await the addExpense call to handle errors appropriately
+      account_id: values.account_id,
+      type: "expense" as const,
+      amount: values.amount,
+      category_id: values.category_id,
+      description: values.description || "",
+      transaction_date: values.date,
+      notes: values.paidVia,
+    }
+
+    setIsSubmitting(true)
     try {
-      addExpense(expenseData);
-      toast.success("Expense added successfully!");
-      form.reset();
-      onSuccess?.();
+      const result = await createTransaction(expenseData)
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success("Expense added successfully!")
+        form.reset()
+        onSuccess?.()
+      }
     } catch (error: any) {
-      toast.error(error.message || "Failed to add expense");
+      toast.error(error.message || "Failed to add expense")
+    } finally {
+      setIsSubmitting(false)
     }
   }
-  
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="account_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Account</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an account" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>{account.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="amount"
@@ -99,7 +151,7 @@ export function AddExpenseForm({ onSuccess }: AddExpenseFormProps) {
         />
         <FormField
           control={form.control}
-          name="category"
+          name="category_id"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Category</FormLabel>
@@ -110,52 +162,10 @@ export function AddExpenseForm({ onSuccess }: AddExpenseFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-  <SelectGroup>
-    <SelectLabel className="text-primary font-semibold uppercase text-xs tracking-wider">
-      Essentials
-    </SelectLabel>
-    <SelectItem value="food">{categoryToEmoji.food} Food</SelectItem>
-    <SelectItem value="grocery">{categoryToEmoji.grocery} Grocery</SelectItem>
-    <SelectItem value="medical">{categoryToEmoji.medical} Medical</SelectItem>
-  </SelectGroup>
-  <SelectSeparator className="my-2" />
-  <SelectGroup>
-    <SelectLabel className="text-blue-500 dark:text-blue-400 font-semibold uppercase text-xs tracking-wider">
-      Expenses
-    </SelectLabel>
-    <SelectItem value="bills">{categoryToEmoji.bills} Bills</SelectItem>
-    <SelectItem value="education">{categoryToEmoji.education} Education</SelectItem>
-    <SelectItem value="online_order">{categoryToEmoji.online_order} Online Order</SelectItem>
-    <SelectItem value="rent">{categoryToEmoji.rent} Rent</SelectItem>
-  </SelectGroup>
-  <SelectSeparator className="my-2" />
-  <SelectGroup>
-    <SelectLabel className="text-purple-500 dark:text-purple-400 font-semibold uppercase text-xs tracking-wider">
-      Leisure
-    </SelectLabel>
-    <SelectItem value="entertainment">{categoryToEmoji.entertainment} Entertainment</SelectItem>
-    <SelectItem value="shopping">{categoryToEmoji.shopping} Shopping</SelectItem>
-    <SelectItem value="travel">{categoryToEmoji.travel} Travel</SelectItem>
-    <SelectItem value="sports">{categoryToEmoji.sports} Sports</SelectItem>
-  </SelectGroup>
-  <SelectSeparator className="my-2" />
-  <SelectGroup>
-    <SelectLabel className="text-orange-500 dark:text-orange-400 font-semibold uppercase text-xs tracking-wider">
-      Payments
-    </SelectLabel>
-    <SelectItem value="emi">{categoryToEmoji.emi} EMI</SelectItem>
-    <SelectItem value="savings">{categoryToEmoji.savings} Savings</SelectItem>
-    <SelectItem value="debt">{categoryToEmoji.debt} Debt</SelectItem>
-    <SelectItem value="loan">{categoryToEmoji.loan} Loan</SelectItem>
-  </SelectGroup>
-  <SelectSeparator className="my-2" />
-  <SelectGroup>
-    <SelectLabel className="text-gray-500 dark:text-gray-400 font-semibold uppercase text-xs tracking-wider">
-      Other
-    </SelectLabel>
-    <SelectItem value="others">{categoryToEmoji.others} Others</SelectItem>
-  </SelectGroup>
-</SelectContent>
+                  {expenseCategories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.icon ? `${cat.icon} ` : ''}{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
               <FormMessage />
             </FormItem>
@@ -200,21 +210,14 @@ export function AddExpenseForm({ onSuccess }: AddExpenseFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="credit_card">Credit Card</SelectItem>
-                  <SelectItem value="debit_card">Debit Card</SelectItem>
-                  <SelectItem value="e_wallet">E-Wallet</SelectItem>
-                  <SelectItem value="net_banking">NetBanking</SelectItem>
-                  <SelectItem value="upi">UPI</SelectItem>
-                </SelectContent>
-              </Select>
+                  <SelectItem value="cash">Cash</SelectItem><SelectItem value="credit_card">Credit Card</SelectItem><SelectItem value="debit_card">Debit Card</SelectItem><SelectItem value="e_wallet">E-Wallet</SelectItem><SelectItem value="net_banking">NetBanking</SelectItem><SelectItem value="upi">UPI</SelectItem>
+                </SelectContent></Select>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">Add Expense</Button>
+        <Button type="submit" className="w-full" disabled={isSubmitting}>Add Expense</Button>
       </form>
     </Form>
   )
 }
-

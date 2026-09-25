@@ -4,6 +4,7 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
@@ -132,3 +133,28 @@ export const signOutAction = async () => {
   await supabase.auth.signOut();
   return redirect("/sign-in");
 };
+
+export async function updateProfile(input: { displayName?: string; baseCurrency?: string; dateFormat?: string }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Authentication required", data: null };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      display_name: input.displayName || null,
+      base_currency: input.baseCurrency || "USD",
+      date_format: input.dateFormat || "YYYY-MM-DD",
+    })
+    .eq("id", user.id);
+
+  if (error) {
+    return { error: error.message, data: null };
+  }
+
+  revalidatePath("/protected/settings");
+  return { error: null, data: { displayName: input.displayName, baseCurrency: input.baseCurrency, dateFormat: input.dateFormat } };
+}
