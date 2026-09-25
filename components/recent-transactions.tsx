@@ -30,7 +30,7 @@ export function RecentTransactions({ className, dateRange }: RecentTransactionsP
   const recentTransactions = useMemo(() => {
     return transactions
       .filter((t: any) => {
-        if (t.type !== 'income' && t.type !== 'expense') return false
+        if (t.type !== 'income' && t.type !== 'expense' && t.type !== 'transfer') return false
         const tDate = new Date(t.transaction_date)
         return (!effectiveRange?.from || tDate >= effectiveRange.from) && (!effectiveRange?.to || tDate <= effectiveRange.to)
       })
@@ -46,12 +46,14 @@ export function RecentTransactions({ className, dateRange }: RecentTransactionsP
           <div key={transaction.id} className="flex items-center">
             <div className="ml-4 space-y-1">
               <p className="text-sm font-medium leading-none">
-                {transaction.category_name || transaction.category || transaction.type}
+                {transaction.type === 'transfer'
+                  ? `Transfer: ${transaction.source_account_name || 'Unknown'} → ${transaction.destination_account_name || 'Unknown'}`
+                  : transaction.category_name || transaction.category || transaction.type}
               </p>
               <p className="text-sm text-muted-foreground">{formatDate(transaction.transaction_date, preferences.dateFormat)}</p>
             </div>
-            <div className={`ml-auto font-medium ${transaction.type === 'income' ? 'text-green-500' : transaction.type === 'expense' ? 'text-red-500' : 'text-blue-500'}`}>
-              {transaction.type === 'income' ? '+' : '-'}
+            <div className={`ml-auto font-medium ${transaction.type === 'income' ? 'text-green-500' : transaction.type === 'expense' ? 'text-red-500' : transaction.type === 'transfer' ? 'text-blue-500' : ''}`}>
+              {transaction.type === 'income' ? '+' : transaction.type === 'expense' ? '-' : '↔'}
               {formatCurrency(transaction.amount, preferences.currency)}
             </div>
           </div>

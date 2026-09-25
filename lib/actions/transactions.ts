@@ -120,7 +120,9 @@ export async function getTransactions(dateFrom?: string, dateTo?: string) {
     .from("transactions")
     .select(`
       *,
-      categories:categories(id, name, icon)
+      categories:categories(id, name, icon),
+      source_account:accounts!account_id(id, name),
+      destination_account:accounts!destination_account_id(id, name)
     `)
     .eq("user_id", user.id)
 
@@ -145,6 +147,8 @@ export async function getTransactions(dateFrom?: string, dateTo?: string) {
     paidVia: t.notes ?? null,
     category_name: t.categories?.name ?? null,
     category_icon: t.categories?.icon ?? null,
+    source_account_name: t.source_account?.name ?? null,
+    destination_account_name: t.destination_account?.name ?? null,
   }))
 
   return { data: normalized, error: null }

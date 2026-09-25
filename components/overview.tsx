@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { motion } from "framer-motion"
-import { ArrowDown, ArrowUp, CreditCard, PiggyBank, Wallet, WalletCards, Plus } from "lucide-react"
+import { ArrowDown, ArrowUp, ArrowRightLeft, CreditCard, PiggyBank, Wallet, WalletCards, Plus, TrendingUp, RefreshCcw } from "lucide-react"
 import { usePreferences } from "@/lib/preferences-context"
 import { formatCurrency } from "@/lib/format-utils"
 import { getTransactions } from "@/lib/actions/transactions"
@@ -11,8 +11,16 @@ import { DateRangePicker } from "@/components/date-range-picker"
 import { Reports } from "./reports"
 import { RecentTransactions } from "@/components/recent-transactions"
 import { Button } from "@/components/ui/button"
+import { AddIncomeDialog } from "../components/income/add-income-dialog"
 import { AddExpenseDialog } from "../components/expenses/add-expense-dialog"
+import { AddTransferDialog } from "../components/transfers/add-transfer-dialog"
 import { useDateRangeStore } from "@/lib/hooks/use-date-range-store"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const timePeriodOptions = [
   { label: "Today", value: "today" },
@@ -27,7 +35,9 @@ interface DateRange { from: Date; to?: Date }
 export function Overview() {
   const { dateRange, timePeriod, setDateRange, setTimePeriod, updateDateRangeByPeriod } = useDateRangeStore()
   const [transactions, setTransactions] = useState<any[]>([])
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false)
+  const [isAddIncomeOpen, setIsAddIncomeOpen] = useState(false)
+  const [isAddTransferOpen, setIsAddTransferOpen] = useState(false)
   const { preferences } = usePreferences()
 
   useEffect(() => {
@@ -81,8 +91,33 @@ export function Overview() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}><div className="bg-card rounded-xl border shadow-sm p-1"><div className="p-4"><h2 className="text-xl font-semibold mb-4">Financial Reports</h2><Reports dateRange={dateRange} /></div></div></motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}><div className="bg-card rounded-xl border shadow-sm p-1"><div className="p-4"><h2 className="text-xl font-semibold mb-4">Recent Transactions</h2><RecentTransactions dateRange={dateRange} /></div></div></motion.div>
       </div>
-      <div className="fixed bottom-20 right-4 z-40 sm:bottom-8 sm:right-8"><Button onClick={() => setIsAddDialogOpen(true)} size="icon" className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white"><Plus className="h-6 w-6" /><span className="sr-only">Add expense</span></Button></div>
-      <AddExpenseDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+      <div className="fixed bottom-20 right-4 z-40 sm:bottom-8 sm:right-8">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="icon" className="h-14 w-14 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 text-white">
+              <Plus className="h-6 w-6" />
+              <span className="sr-only">Add transaction</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem onClick={() => setIsAddIncomeOpen(true)} className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-green-500" />
+              <span>Add Income</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setIsAddExpenseOpen(true)} className="flex items-center gap-2">
+              <RefreshCcw className="h-4 w-4 text-red-500" />
+              <span>Add Expense</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setIsAddTransferOpen(true)} className="flex items-center gap-2">
+              <ArrowRightLeft className="h-4 w-4 text-blue-500" />
+              <span>Add Transfer</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <AddIncomeDialog open={isAddIncomeOpen} onOpenChange={setIsAddIncomeOpen} />
+      <AddExpenseDialog open={isAddExpenseOpen} onOpenChange={setIsAddExpenseOpen} />
+      <AddTransferDialog open={isAddTransferOpen} onOpenChange={setIsAddTransferOpen} />
     </div>
   )
 }
