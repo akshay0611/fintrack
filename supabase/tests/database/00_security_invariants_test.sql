@@ -253,6 +253,21 @@ END;
 $$;
 
 -- ===========================================================================
+-- T-06b: SYSTEM CATEGORY TYPE MATCH — Income transaction with system income category
+-- ===========================================================================
+DO $$
+BEGIN
+    PERFORM set_config('request.jwt.claims', '{"sub": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "role": "authenticated"}', true);
+    PERFORM set_config('role', 'authenticated', true);
+
+    INSERT INTO public.transactions (user_id, account_id, category_id, type, amount, description)
+    VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000001-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', 'income', 300.00, 'System income category test');
+
+    RAISE NOTICE 'T-06b PASSED: Income transaction with system income category accepted';
+END;
+$$;
+
+-- ===========================================================================
 -- T-07a: SYSTEM CATEGORY PROTECTION — User A cannot modify system categories
 -- ===========================================================================
 DO $$
@@ -293,8 +308,27 @@ BEGIN
         VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000001-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', 'expense', 25.00, 'Income category as expense');
         RAISE EXCEPTION 'T-07b FAILED: Expense transaction with income category should have been blocked';
     EXCEPTION
-        WHEN check_violation THEN
-            RAISE NOTICE 'T-07b PASSED: Expense transaction with income category correctly rejected';
+        WHEN SQLSTATE '23514' THEN
+            RAISE NOTICE 'T-07b PASSED: Expense transaction with income category rejected with SQLSTATE 23514';
+    END;
+END;
+$$;
+
+-- ===========================================================================
+-- T-07c: SYSTEM CATEGORY TYPE MATCH — Income transaction cannot use system expense category
+-- ===========================================================================
+DO $$
+BEGIN
+    PERFORM set_config('request.jwt.claims', '{"sub": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "role": "authenticated"}', true);
+    PERFORM set_config('role', 'authenticated', true);
+
+    BEGIN
+        INSERT INTO public.transactions (user_id, account_id, category_id, type, amount, description)
+        VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000001-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001', 'income', 25.00, 'Expense category as income');
+        RAISE EXCEPTION 'T-07c FAILED: Income transaction with expense category should have been blocked';
+    EXCEPTION
+        WHEN SQLSTATE '23514' THEN
+            RAISE NOTICE 'T-07c PASSED: Income transaction with expense category rejected with SQLSTATE 23514';
     END;
 END;
 $$;
@@ -672,6 +706,45 @@ BEGIN
     VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000001-0000-0000-0000-000000000001', 'ca000001-0000-0000-0000-000000000001', 'expense', 30.00, 'Valid expense test');
 
     RAISE NOTICE 'T-27 PASSED: Valid expense + expense category accepted';
+END;
+$$;
+
+-- ===========================================================================
+-- T-27b: CUSTOM CATEGORY TYPE MATCH — Income cannot use custom expense category
+-- ===========================================================================
+DO $$
+BEGIN
+    PERFORM set_config('request.jwt.claims', '{"sub": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "role": "authenticated"}', true);
+    PERFORM set_config('role', 'authenticated', true);
+
+    BEGIN
+        INSERT INTO public.transactions (user_id, account_id, category_id, type, amount, description)
+        VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000001-0000-0000-0000-000000000001', 'ca000001-0000-0000-0000-000000000001', 'income', 25.00, 'Custom expense category as income');
+        RAISE EXCEPTION 'T-27b FAILED: Income transaction with custom expense category should have been blocked';
+    EXCEPTION
+        WHEN SQLSTATE '23514' THEN
+            RAISE NOTICE 'T-27b PASSED: Income transaction with custom expense category rejected with SQLSTATE 23514';
+    END;
+END;
+$$;
+
+-- ===========================================================================
+-- T-27c: CATEGORY UPDATE TYPE MATCH — Cannot update expense to income category
+-- ===========================================================================
+DO $$
+BEGIN
+    PERFORM set_config('request.jwt.claims', '{"sub": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "role": "authenticated"}', true);
+    PERFORM set_config('role', 'authenticated', true);
+
+    BEGIN
+        UPDATE public.transactions
+        SET category_id = 'ca000001-0000-0000-0000-000000000002'
+        WHERE id = 't0000001-0000-0000-0000-000000000001';
+        RAISE EXCEPTION 'T-27c FAILED: Expense transaction updated to income category should have been blocked';
+    EXCEPTION
+        WHEN SQLSTATE '23514' THEN
+            RAISE NOTICE 'T-27c PASSED: Mismatched category update rejected with SQLSTATE 23514';
+    END;
 END;
 $$;
 
