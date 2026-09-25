@@ -1,7 +1,6 @@
 "use client"
 
 import { Suspense } from "react"
-import { SideNav } from "@/components/side-nav"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Accordion,
@@ -22,7 +21,6 @@ import { Mail, MessageCircle, FileText, Github, Twitter } from 'lucide-react'
 export default function HelpPage() {
   return (
     <div className="flex min-h-screen">
-      <SideNav />
       <div className="flex-1">
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
           <div className="flex items-center justify-between space-y-2">

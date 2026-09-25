@@ -1,12 +1,10 @@
 import { Suspense } from "react"
-import { SideNav } from "@/components/side-nav"
 import SettingsTabs from "@/components/settings/settings-tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function SettingsPage() {
   return (
     <div className="flex min-h-screen">
-      <SideNav />
       <div className="flex-1">
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
           <div className="flex items-center justify-between space-y-2">
@@ -20,4 +18,3 @@ export default function SettingsPage() {
     </div>
   )
 }
-

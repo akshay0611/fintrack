@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Layers,
   LifeBuoy,
+  BarChart3,
 } from "lucide-react";
 
 interface NavLinkProps {
@@ -55,6 +56,7 @@ export function SideNav() {
         <NavLink href="/protected/expenses" icon={RefreshCcw} label="Expenses" />
         <NavLink href="/protected/investments" icon={CreditCard} label="Investments" />
         <NavLink href="/protected/subscriptions" icon={Layers} label="Subscriptions" />
+        <NavLink href="/protected/reports" icon={BarChart3} label="Reports" />
       </div>
 
       {/* Bottom Actions */}
