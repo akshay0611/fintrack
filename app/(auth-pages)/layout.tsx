@@ -1,13 +1,11 @@
-import { AppShell } from "@/components/app-shell";
-
 export default async function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <AppShell>
-      <div className="max-w-7xl flex flex-col gap-12 items-start">{children}</div>
-    </AppShell>
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-white px-5 py-12 text-ink">
+      <div className="relative w-full max-w-md">{children}</div>
+    </div>
   );
 }
