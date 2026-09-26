@@ -1,14 +1,38 @@
-import Hero from "@/components/hero";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 
+import Features from "@/components/landing/features";
+import FinalCta from "@/components/landing/final-cta";
+import Footer from "@/components/landing/footer";
+import Hero from "@/components/landing/hero";
+import MobileShowcase from "@/components/landing/mobile-showcase";
+import Navbar from "@/components/landing/navbar";
+import TrustedBy from "@/components/landing/trusted-by";
 
-export default async function Home() {
+const inter = Inter({ display: "swap", subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "FinTrack — Personal finance, simplified",
+  description:
+    "FinTrack helps you track expenses, understand your spending habits, and build better financial decisions — all in one place.",
+};
+
+export default function HomePage() {
   return (
-    <>
-      <Hero />
-      {/* <main className="flex-1 flex flex-col gap-6 px-4">
-        <h2 className="font-medium text-xl mb-4">Next steps</h2>
-        {hasEnvVars ? <SignUpUserSteps /> : <ConnectSupabaseSteps />}
-      </main> */}
-    </>
+    <div
+      className={`min-h-screen scroll-smooth bg-white text-ink ${inter.className}`}
+    >
+      <Navbar />
+
+      <main>
+        <Hero />
+        <TrustedBy />
+        <Features />
+        <MobileShowcase />
+        <FinalCta />
+      </main>
+
+      <Footer />
+    </div>
   );
 }
