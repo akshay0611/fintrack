@@ -53,14 +53,20 @@ export default function MobileShowcase() {
             </div>
           </div>
 
-          <div className="relative flex min-h-[280px] items-end justify-end overflow-hidden py-6 pl-4 pr-0 sm:min-h-[340px] lg:min-h-0 lg:py-10 lg:pl-0">
+          {/* No `fill` — mobile-overview.png sizes itself from its real aspect
+    ratio via h-auto, so there's no invisible box that can end up taller
+    than the image (that invisible box was the source of the green gap
+    above/below the phones). IMPORTANT: swap width/height below for your
+    PNG's actual pixel dimensions — run `file images/mobile-overview.png`
+    or check it in Finder/Preview. Wrong values here will stretch it. */}
+          <div className="relative flex items-end justify-end p-4 sm:p-6 lg:p-8">
             <Image
               src="/images/mobile-overview.png"
               alt="FinTrack mobile transactions list next to a monthly spending summary chart with category breakdown"
-              width={1928}
-              height={816}
-              sizes="(min-width: 1024px) 620px, 100vw"
-              className="h-auto w-[135%] max-w-none translate-x-[8%] object-contain object-right lg:w-[128%] lg:translate-x-[12%]"
+              width={1600} /* ← replace with the real width of your file */
+              height={1300} /* ← replace with the real height of your file */
+              sizes="(min-width: 1024px) 45vw, 100vw"
+              className="h-auto w-full max-w-[560px]"
             />
           </div>
         </div>
