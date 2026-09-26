@@ -55,7 +55,7 @@ export default function MobileShowcase() {
 
           <div className="relative flex min-h-[280px] items-end justify-end overflow-hidden py-6 pl-4 pr-0 sm:min-h-[340px] lg:min-h-0 lg:py-10 lg:pl-0">
             <Image
-              src="/images/mobile-overview.webp"
+              src="/images/mobile-overview.png"
               alt="FinTrack mobile transactions list next to a monthly spending summary chart with category breakdown"
               width={1928}
               height={816}
