@@ -17,7 +17,7 @@ export default async function ForgotPassword(props: {
   const searchParams = await props.searchParams;
   return (
     <motion.div 
-      className="flex-1 flex flex-col min-w-64 max-w-md p-8 rounded-2xl bg-white dark:bg-gray-900 shadow-2xl dark:shadow-gray-800/30 border border-gray-100 dark:border-gray-800"
+      className="flex-1 flex flex-col min-w-64 max-w-md p-8 rounded-2xl bg-white shadow-2xl border border-gray-100 text-ink"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
