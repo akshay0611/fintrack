@@ -27,7 +27,7 @@ export default function MobileShowcase() {
   return (
     <section className="w-full pb-24">
       <Container>
-        <div className="grid grid-cols-1 items-center overflow-hidden rounded-3xl bg-surface-green lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-stretch overflow-hidden rounded-3xl bg-surface-green lg:grid-cols-2">
           <div className="px-8 py-12 lg:p-16">
             <Eyebrow className="bg-white">On the go</Eyebrow>
 
@@ -53,27 +53,16 @@ export default function MobileShowcase() {
             </div>
           </div>
 
-          <div className="flex justify-center py-8 lg:py-0">
+          <div className="relative flex min-h-[280px] items-end justify-end overflow-hidden py-6 pl-4 pr-0 sm:min-h-[340px] lg:min-h-0 lg:py-10 lg:pl-0">
             <Image
               src="/images/mobile-overview.webp"
-              alt="FinTrack mobile app home screen showing this month's spending total, trend chart, quick-add actions and top categories"
+              alt="FinTrack mobile transactions list next to a monthly spending summary chart with category breakdown"
               width={1928}
               height={816}
-              sizes="(min-width: 1024px) 280px, 60vw"
-              className="h-auto w-[60%] max-w-[280px]"
+              sizes="(min-width: 1024px) 620px, 100vw"
+              className="h-auto w-[135%] max-w-none translate-x-[8%] object-contain object-right lg:w-[128%] lg:translate-x-[12%]"
             />
           </div>
-        </div>
-
-        <div className="mt-4 overflow-hidden rounded-3xl bg-surface-green">
-          <Image
-            src="/images/dashboard-mobile.webp"
-            alt="FinTrack mobile transactions list next to a monthly spending summary chart with category breakdown"
-            width={1536}
-            height={1024}
-            sizes="(min-width: 1200px) 1152px, calc(100vw - 48px)"
-            className="h-auto w-full"
-          />
         </div>
       </Container>
     </section>
